@@ -1,0 +1,42 @@
+# Backend
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+*.so
+.pytest_cache/
+.coverage
+htmlcov/
+media/
+staticfiles/
+.env
+*.log
+
+# Frontend
+node_modules/
+dist/
+.env
+.env.*
+!.env.example
+
+# IDE
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Operating systems
+.DS_Store
+Thumbs.db
+
+# Python packaging
+build/
+develop-eggs/
+eggs/
+.eggs/
+*.egg-info/
+pip-wheel-metadata/
+
+# TypeScript
+*.tsbuildinfo

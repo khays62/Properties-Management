@@ -1,0 +1,10 @@
+Django
+djangorestframework
+django-filter
+drf-spectacular
+psycopg2-binary
+djangorestframework-simplejwt
+python-dotenv
+Pillow
+pytest
+pytest-django
