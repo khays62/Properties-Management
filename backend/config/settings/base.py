@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     "drf_spectacular",
     "apps.accounts.apps.AccountsConfig",
     "apps.properties.apps.PropertiesConfig",
+    "apps.listings.apps.ListingsConfig",
 ]
 
 MIDDLEWARE = [
