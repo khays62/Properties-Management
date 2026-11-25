@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     "apps.properties.apps.PropertiesConfig",
     "apps.listings.apps.ListingsConfig",
     "apps.applications.apps.ApplicationsConfig",
+    "apps.leases.apps.LeasesConfig",
 ]
 
 MIDDLEWARE = [
@@ -126,6 +127,40 @@ STATIC_URL = os.getenv("STATIC_URL", "/static/")
 STATIC_ROOT = _get_path_setting("STATIC_ROOT", BASE_DIR / "staticfiles")
 MEDIA_URL = os.getenv("MEDIA_URL", "/media/")
 MEDIA_ROOT = _get_path_setting("MEDIA_ROOT", BASE_DIR / "media")
+
+EMAIL_BACKEND = os.getenv(
+    "EMAIL_BACKEND",
+    "django.core.mail.backends.console.EmailBackend",
+)
+EMAIL_HOST = os.getenv("EMAIL_HOST", "")
+EMAIL_PORT = int(os.getenv("EMAIL_PORT", "587"))
+EMAIL_USE_TLS = _get_bool_setting("EMAIL_USE_TLS", True)
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "")
+DEFAULT_FROM_EMAIL = os.getenv(
+    "DEFAULT_FROM_EMAIL",
+    "no-reply@omniproperties.local",
+)
+FRONTEND_BASE_URL = os.getenv(
+    "FRONTEND_BASE_URL",
+    "http://localhost:5173",
+).rstrip("/")
+PASSWORD_RESET_TIMEOUT = int(os.getenv("PASSWORD_RESET_TIMEOUT", "86400"))
+
+AUTH_PASSWORD_VALIDATORS = [
+    {
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
+    },
+    {
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
+    },
+    {
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
+    },
+    {
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
+    },
+]
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 

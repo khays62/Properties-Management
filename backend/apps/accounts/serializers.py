@@ -55,3 +55,13 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "updated_at",
         )
         read_only_fields = ("user", "created_at", "updated_at")
+
+
+class TenantPasswordSetupSerializer(serializers.Serializer):
+    uid = serializers.CharField()
+    token = serializers.CharField()
+    new_password = serializers.CharField(
+        write_only=True,
+        trim_whitespace=False,
+        style={"input_type": "password"},
+    )

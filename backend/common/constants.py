@@ -66,6 +66,18 @@ class LeaseStatus(models.TextChoices):
     EXPIRED = "EXPIRED", "Expired"
 
 
+class TenantStatus(models.TextChoices):
+    ACTIVE = "ACTIVE", "Active"
+    INACTIVE = "INACTIVE", "Inactive"
+    MOVED_OUT = "MOVED_OUT", "Moved Out"
+
+
+class RenewalAlertStatus(models.TextChoices):
+    UNREAD = "UNREAD", "Unread"
+    READ = "READ", "Read"
+    RESOLVED = "RESOLVED", "Resolved"
+
+
 class DepositStatus(models.TextChoices):
     PENDING = "PENDING", "Pending"
     PARTIALLY_PAID = "PARTIALLY_PAID", "Partially Paid"
