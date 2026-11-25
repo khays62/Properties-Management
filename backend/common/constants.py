@@ -31,6 +31,13 @@ class ListingStatus(models.TextChoices):
     EXPIRED = "EXPIRED", "Expired"
 
 
+class EmploymentStatus(models.TextChoices):
+    EMPLOYED = "EMPLOYED", "Employed"
+    SELF_EMPLOYED = "SELF_EMPLOYED", "Self-employed"
+    UNEMPLOYED = "UNEMPLOYED", "Unemployed"
+    STUDENT = "STUDENT", "Student"
+
+
 class ApplicationStatus(models.TextChoices):
     SUBMITTED = "SUBMITTED", "Submitted"
     UNDER_REVIEW = "UNDER_REVIEW", "Under Review"
