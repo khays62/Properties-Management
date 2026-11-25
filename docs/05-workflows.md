@@ -39,3 +39,14 @@ Tenant users can view only their own leases and renewal alerts. Owner and proper
 7. Charges with a positive balance become `OVERDUE` only after their due date. A generator run also creates past-due charges with `OVERDUE` status.
 
 Finance actions run through services and database transactions. Accountants have finance-wide access; owners and property managers are restricted to their properties; tenant users can read only their own deposits, charges, payments, and receipts.
+
+## Maintenance tickets
+
+1. A tenant can create a ticket only for a unit marked `OCCUPIED` with a current `ACTIVE` lease belonging to that tenant. The ticket starts in `OPEN`.
+2. An owner or assigned property manager can assign an open ticket to a property manager actively assigned to the ticket's property. Assignment moves the ticket to `ASSIGNED`.
+3. Tickets move through `ASSIGNED`, `IN_PROGRESS`, `RESOLVED`, and `CLOSED` in order. Resolving a ticket requires resolution notes. Invalid transitions are rejected.
+4. An open ticket may be cancelled by its tenant or a manager with access to the property. `CANCELLED` is terminal.
+5. Ticket creation, updates, assignment, work start, resolution, closure, and cancellation atomically create corresponding activity records.
+6. Tenants can view and upload attachments only on their own tickets. Attachments are limited to JPG, JPEG, PNG, and PDF files up to 5 MB.
+
+Owners and property managers only see tickets for owned or actively assigned properties. Tenants see only their own tickets and activity history.

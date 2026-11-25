@@ -90,3 +90,17 @@ Rent charge filters are `status`, `tenant`, `lease`, `billing_month`, `billing_y
 - `POST /api/v1/payments/{id}/reverse/`
 
 Payment filters are `status`, `tenant`, `payment_method`, and `search`. Receipts are read-only at `/api/v1/receipts/`; filters include `tenant`, `payment`, and `search`.
+
+## Maintenance
+
+Tenants can create tickets at `POST /api/v1/maintenance-tickets/` with `unit`, `title`, `description`, `category`, and optional `priority`. Owners and assigned property managers can also create tickets for a tenant with a lease for the selected unit. Ticket filters are `status`, `priority`, `category`, `tenant`, `property`, `unit`, `assigned_to`, and `search`. Owners and assigned property managers see tickets for their properties; tenants can access only their own.
+
+Ticket workflow actions:
+
+- `POST /api/v1/maintenance-tickets/{id}/assign/` with `{"assigned_to": "<property-manager-uuid>"}` and optional `notes`
+- `POST /api/v1/maintenance-tickets/{id}/start/` with optional `notes`
+- `POST /api/v1/maintenance-tickets/{id}/resolve/` with `{"resolution_notes": "..."}`
+- `POST /api/v1/maintenance-tickets/{id}/close/` with optional `notes`
+- `POST /api/v1/maintenance-tickets/{id}/cancel/` with optional `notes`
+
+Ticket detail includes its activity history and attachments. Attachments can be uploaded to `/api/v1/maintenance-attachments/` as multipart form data with `ticket` and `file`; allowed file extensions are JPG, JPEG, PNG, and PDF, with a 5 MB maximum. Activities are read-only at `/api/v1/maintenance-activities/` and can be filtered by `ticket`.

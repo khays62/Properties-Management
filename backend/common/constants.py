@@ -120,3 +120,29 @@ class MaintenanceStatus(models.TextChoices):
     RESOLVED = "RESOLVED", "Resolved"
     CLOSED = "CLOSED", "Closed"
     CANCELLED = "CANCELLED", "Cancelled"
+
+
+class MaintenanceCategory(models.TextChoices):
+    PLUMBING = "PLUMBING", "Plumbing"
+    ELECTRICAL = "ELECTRICAL", "Electrical"
+    CLEANING = "CLEANING", "Cleaning"
+    SECURITY = "SECURITY", "Security"
+    HVAC = "HVAC", "HVAC"
+    OTHER = "OTHER", "Other"
+
+
+class MaintenancePriority(models.TextChoices):
+    LOW = "LOW", "Low"
+    MEDIUM = "MEDIUM", "Medium"
+    HIGH = "HIGH", "High"
+    URGENT = "URGENT", "Urgent"
+
+
+class MaintenanceActivityAction(models.TextChoices):
+    CREATED = "CREATED", "Created"
+    ASSIGNED = "ASSIGNED", "Assigned"
+    STARTED = "STARTED", "Started"
+    UPDATED = "UPDATED", "Updated"
+    RESOLVED = "RESOLVED", "Resolved"
+    CLOSED = "CLOSED", "Closed"
+    CANCELLED = "CANCELLED", "Cancelled"
