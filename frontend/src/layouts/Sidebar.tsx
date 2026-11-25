@@ -30,6 +30,7 @@ const DEFAULT_ITEMS: readonly SidebarItem[] = [
   {
     id: "dashboard",
     label: "Dashboard",
+    href: "/dashboard",
     icon: (
       <svg fill="none" viewBox="0 0 24 24">
         <path

@@ -1,6 +1,6 @@
 export function getSafeRedirectPath(
   state: unknown,
-  fallback = "/",
+  fallback = "/dashboard",
 ): string {
   if (
     typeof state !== "object" ||
