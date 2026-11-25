@@ -65,3 +65,11 @@ Owners and property managers only see tickets for owned or actively assigned pro
 2. Each record captures the actor, action, model and object identifiers, optional old/new data, and request IP address and user agent where the workflow has request context.
 3. Audit records are append-only. The API is read-only and available to owners, property managers, and accountants; tenants cannot read audit history.
 4. Audit writes occur in the corresponding domain transaction, so a failed workflow does not leave a success-shaped audit record.
+
+## Reports and dashboards
+
+1. Reports are read-only aggregates over existing domain records; there are no report snapshots or report-specific database tables.
+2. Owner and property-manager reports are scoped to owned or actively assigned properties. Accountant reports are portfolio-wide.
+3. Tenants may access only the dashboard summary for their own leases, charges, payments, and maintenance requests. They cannot access aggregate occupancy, finance, lease, or maintenance reports.
+4. Occupancy is a current snapshot. Maintenance date filters apply to ticket creation dates, lease date ranges select leases overlapping that period, rent charges use due dates, and payment collections use payment dates.
+5. Lease reports accept `days=30`, `days=60`, or `days=90` to count active/expiring leases whose end date falls in that future window.

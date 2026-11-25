@@ -65,6 +65,7 @@ INSTALLED_APPS = [
     "apps.maintenance.apps.MaintenanceConfig",
     "apps.notifications.apps.NotificationsConfig",
     "apps.audit.apps.AuditConfig",
+    "apps.reports.apps.ReportsConfig",
 ]
 
 MIDDLEWARE = [

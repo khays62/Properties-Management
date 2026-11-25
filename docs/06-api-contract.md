@@ -117,3 +117,17 @@ The mark-all-read response includes `updated_count`.
 ## Audit
 
 `/api/v1/audit-logs/` is read-only and restricted to owners, property managers, and accountants. Tenants are denied access. List filters are `action`, `model_name`, `user`, `date` (`YYYY-MM-DD`), and `search`; `object_id` can additionally scope logs to one object.
+
+## Reports
+
+All reports are read-only:
+
+- `GET /api/v1/reports/dashboard/`
+- `GET /api/v1/reports/occupancy/`
+- `GET /api/v1/reports/financial-summary/`
+- `GET /api/v1/reports/leases/`
+- `GET /api/v1/reports/maintenance/`
+
+Owners see reports for their properties; property managers see reports for actively assigned properties; accountants see portfolio-wide summaries. Tenants can access only `/reports/dashboard/`, which contains their own lease, charge, payment, and maintenance-request summary.
+
+Reports accept `property`, `city`, `start_date`, `end_date`, and `status` filters where relevant. Dates use `YYYY-MM-DD`; `start_date` must not be after `end_date`. Status values are applied to the corresponding source records. The occupancy endpoint is a current snapshot and does not apply date filters. Lease reports additionally accept `days=30`, `days=60`, or `days=90` (default 90) for the expiring-lease window.
