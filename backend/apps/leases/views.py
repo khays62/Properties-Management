@@ -4,6 +4,8 @@ from rest_framework.decorators import action
 from rest_framework.request import Request
 from rest_framework.response import Response
 
+from apps.audit.services.audit_log_service import AuditContext
+
 from .models import Lease, RenewalAlert, Tenant
 from .permissions import (
     CanManageLeases,
@@ -99,6 +101,7 @@ class LeaseViewSet(
         lease = LeaseService.approve_lease(
             self.get_object(),
             approved_by=request.user,
+            audit_context=AuditContext.from_request(request),
         )
         return self._detail_response(lease)
 
@@ -107,6 +110,7 @@ class LeaseViewSet(
         lease = LeaseService.activate_lease(
             self.get_object(),
             changed_by=request.user,
+            audit_context=AuditContext.from_request(request),
         )
         return self._detail_response(lease)
 
@@ -118,6 +122,7 @@ class LeaseViewSet(
             self.get_object(),
             new_end_date=renewal_serializer.validated_data["new_end_date"],
             changed_by=request.user,
+            audit_context=AuditContext.from_request(request),
         )
         return self._detail_response(successor)
 

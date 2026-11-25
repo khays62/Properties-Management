@@ -5,6 +5,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.request import Request
 from rest_framework.response import Response
 
+from apps.audit.services.audit_log_service import AuditContext
 from common.constants import ListingStatus
 
 from .models import ListingImage
@@ -52,7 +53,11 @@ class ListingViewSet(
 
     @action(detail=True, methods=["post"], url_path="publish")
     def publish(self, request: Request, pk: str | None = None) -> Response:
-        listing = ListingService.publish_listing(self.get_object())
+        listing = ListingService.publish_listing(
+            self.get_object(),
+            published_by=request.user,
+            audit_context=AuditContext.from_request(request),
+        )
         return Response(self.get_serializer(listing).data)
 
     @action(detail=True, methods=["post"], url_path="pause")
@@ -62,7 +67,11 @@ class ListingViewSet(
 
     @action(detail=True, methods=["post"], url_path="close")
     def close(self, request: Request, pk: str | None = None) -> Response:
-        listing = ListingService.close_listing(self.get_object())
+        listing = ListingService.close_listing(
+            self.get_object(),
+            closed_by=request.user,
+            audit_context=AuditContext.from_request(request),
+        )
         return Response(self.get_serializer(listing).data)
 
     @action(detail=True, methods=["post"], url_path="expire")

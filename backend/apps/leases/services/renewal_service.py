@@ -2,7 +2,9 @@ from datetime import date, timedelta
 
 from django.db import transaction
 from django.utils import timezone
-from common.constants import LeaseStatus, RenewalAlertStatus
+
+from apps.notifications.services.notification_service import NotificationService
+from common.constants import LeaseStatus, NotificationType, RenewalAlertStatus
 from common.exceptions import ConflictErrorResponse
 
 from ..models import Lease, LeaseStatusHistory, RenewalAlert
@@ -57,6 +59,16 @@ class RenewalService:
                     )
                     if created:
                         generated.append(alert)
+                        NotificationService.create_notification(
+                            user=lease.tenant.user,
+                            title="Lease renewal reminder",
+                            message=(
+                                f"Your lease for {lease.unit} expires on "
+                                f"{lease.end_date}; {days_before_expiry} days "
+                                "remain."
+                            ),
+                            type=NotificationType.RENEWAL,
+                        )
         return generated
 
     @staticmethod

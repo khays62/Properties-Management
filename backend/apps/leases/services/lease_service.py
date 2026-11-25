@@ -1,5 +1,6 @@
 from datetime import date, timedelta
 from decimal import Decimal
+
 from django.db import transaction
 from django.utils import timezone
 from rest_framework.exceptions import ValidationError
@@ -7,18 +8,22 @@ from rest_framework.exceptions import ValidationError
 from apps.accounts.models import User
 from apps.accounts.services.tenant_invitation_service import TenantInvitationService
 from apps.applications.models import RentalApplication, Screening
+from apps.audit.services.audit_log_service import AuditContext, AuditLogService
 from apps.listings.models import Listing
+from apps.notifications.services.notification_service import NotificationService
 from apps.properties.models import Unit
+from apps.properties.services.validation import validate_model
 from apps.properties.selectors.property_selector import PropertySelector
 from common.constants import (
     ApplicationStatus,
+    AuditAction,
     LeaseStatus,
     ListingStatus,
+    NotificationType,
     TenantStatus,
     UnitStatus,
 )
 from common.exceptions import ConflictErrorResponse, PermissionDeniedResponse
-from apps.properties.services.validation import validate_model
 
 from ..models import Lease, LeaseStatusHistory
 from ..selectors.lease_selector import LeaseSelector, OCCUPANCY_LEASE_STATUSES
@@ -143,7 +148,12 @@ class LeaseService:
         return locked_lease
 
     @staticmethod
-    def approve_lease(lease: Lease, *, approved_by: User) -> Lease:
+    def approve_lease(
+        lease: Lease,
+        *,
+        approved_by: User,
+        audit_context: AuditContext | None = None,
+    ) -> Lease:
         with transaction.atomic():
             locked_lease = LeaseService._lock_lease(lease)
             if locked_lease.status != LeaseStatus.PENDING_APPROVAL:
@@ -157,6 +167,7 @@ class LeaseService:
                 end_date=locked_lease.end_date,
                 exclude_lease_id=locked_lease.pk,
             )
+            old_status = locked_lease.status
             locked_lease.approved_by = approved_by
             locked_lease.approved_at = timezone.now()
             locked_lease.save(
@@ -168,10 +179,30 @@ class LeaseService:
                 changed_by=approved_by,
                 change_reason="Lease approved.",
             )
+            AuditLogService.log_action(
+                user=approved_by,
+                action=AuditAction.LEASE_APPROVED,
+                model_name="Lease",
+                object_id=str(locked_lease.pk),
+                old_data={"status": old_status},
+                new_data={"status": locked_lease.status},
+                context=audit_context,
+            )
+            NotificationService.create_notification(
+                user=locked_lease.tenant.user,
+                title="Lease approved",
+                message=f"Your lease for {locked_lease.unit} has been approved.",
+                type=NotificationType.LEASE,
+            )
         return locked_lease
 
     @staticmethod
-    def activate_lease(lease: Lease, *, changed_by: User) -> Lease:
+    def activate_lease(
+        lease: Lease,
+        *,
+        changed_by: User,
+        audit_context: AuditContext | None = None,
+    ) -> Lease:
         with transaction.atomic():
             locked_lease = LeaseService._lock_lease(lease)
             if locked_lease.status != LeaseStatus.APPROVED:
@@ -211,6 +242,15 @@ class LeaseService:
             if is_initial_occupancy:
                 listing.status = ListingStatus.CLOSED
                 listing.save(update_fields=["status", "updated_at"])
+                AuditLogService.log_action(
+                    user=changed_by,
+                    action=AuditAction.LISTING_CLOSED,
+                    model_name="Listing",
+                    object_id=str(listing.pk),
+                    old_data={"status": ListingStatus.PUBLISHED},
+                    new_data={"status": listing.status},
+                    context=audit_context,
+                )
                 unit.status = UnitStatus.OCCUPIED
                 unit.save(update_fields=["status", "updated_at"])
             locked_lease.tenant.status = TenantStatus.ACTIVE
@@ -221,6 +261,21 @@ class LeaseService:
                 changed_by=changed_by,
                 change_reason="Lease activated.",
             )
+            AuditLogService.log_action(
+                user=changed_by,
+                action=AuditAction.LEASE_ACTIVATED,
+                model_name="Lease",
+                object_id=str(locked_lease.pk),
+                old_data={"status": LeaseStatus.APPROVED},
+                new_data={"status": locked_lease.status},
+                context=audit_context,
+            )
+            NotificationService.create_notification(
+                user=locked_lease.tenant.user,
+                title="Lease activated",
+                message=f"Your lease for {locked_lease.unit} is now active.",
+                type=NotificationType.LEASE,
+            )
         return locked_lease
 
     @staticmethod
@@ -229,6 +284,7 @@ class LeaseService:
         *,
         new_end_date: date,
         changed_by: User,
+        audit_context: AuditContext | None = None,
     ) -> Lease:
         with transaction.atomic():
             locked_lease = LeaseService._lock_lease(lease)
@@ -238,11 +294,11 @@ class LeaseService:
                 )
             if new_end_date <= locked_lease.end_date + timedelta(days=1):
                 raise ValidationError(
-                        {
-                            "new_end_date": (
-                                "New end date must be after the successor start date."
-                            )
-                        }
+                    {
+                        "new_end_date": (
+                            "New end date must be after the successor start date."
+                        )
+                    }
                 )
             unit = Unit.objects.select_for_update().get(pk=locked_lease.unit_id)
             if unit.status != UnitStatus.OCCUPIED:
@@ -250,6 +306,7 @@ class LeaseService:
                     "The unit must be occupied to renew its lease."
                 )
 
+            old_status = locked_lease.status
             successor_start = locked_lease.end_date + timedelta(days=1)
             LeaseService._transition(
                 locked_lease,
@@ -282,6 +339,18 @@ class LeaseService:
                 new_status=LeaseStatus.PENDING_APPROVAL,
                 changed_by=changed_by,
                 change_reason=f"Renewal successor to lease {locked_lease.pk}.",
+            )
+            AuditLogService.log_action(
+                user=changed_by,
+                action=AuditAction.LEASE_RENEWED,
+                model_name="Lease",
+                object_id=str(locked_lease.pk),
+                old_data={"status": old_status},
+                new_data={
+                    "status": locked_lease.status,
+                    "successor_lease_id": str(successor.pk),
+                },
+                context=audit_context,
             )
         return successor
 

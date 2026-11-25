@@ -6,6 +6,8 @@ from rest_framework.decorators import action
 from rest_framework.request import Request
 from rest_framework.response import Response
 
+from apps.audit.services.audit_log_service import AuditContext
+
 from .models import Applicant, RentalApplication, Screening
 from .permissions import CanManageApplications, CanManageScreening
 from .selectors.applicant_selector import ApplicantSelector
@@ -90,7 +92,11 @@ class RentalApplicationViewSet(
 
     @action(detail=True, methods=["post"], url_path="approve")
     def approve(self, request: Request, pk: str | None = None) -> Response:
-        application = ApplicationService.approve_application(self.get_object())
+        application = ApplicationService.approve_application(
+            self.get_object(),
+            approved_by=request.user,
+            audit_context=AuditContext.from_request(request),
+        )
         return self._detail_response(application)
 
     @action(detail=True, methods=["post"], url_path="reject")
@@ -100,6 +106,8 @@ class RentalApplicationViewSet(
         application = ApplicationService.reject_application(
             self.get_object(),
             rejection_reason=serializer.validated_data["rejection_reason"],
+            rejected_by=request.user,
+            audit_context=AuditContext.from_request(request),
         )
         return self._detail_response(application)
 

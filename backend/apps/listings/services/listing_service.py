@@ -6,9 +6,10 @@ from django.utils import timezone
 from rest_framework.exceptions import ValidationError
 
 from apps.accounts.models import User
+from apps.audit.services.audit_log_service import AuditContext, AuditLogService
 from apps.properties.models import Unit
 from apps.properties.selectors.property_selector import PropertySelector
-from common.constants import ListingStatus, PropertyStatus, UnitStatus
+from common.constants import AuditAction, ListingStatus, PropertyStatus, UnitStatus
 from common.exceptions import ConflictErrorResponse, PermissionDeniedResponse
 
 from ..models import ACTIVE_LISTING_STATUSES, Listing
@@ -52,7 +53,12 @@ class ListingService:
         return listing
 
     @staticmethod
-    def publish_listing(listing: Listing) -> Listing:
+    def publish_listing(
+        listing: Listing,
+        *,
+        published_by: User | None = None,
+        audit_context: AuditContext | None = None,
+    ) -> Listing:
         with transaction.atomic():
             listing, unit = ListingService._lock_listing(listing)
             if listing.status not in (ListingStatus.DRAFT, ListingStatus.PAUSED):
@@ -83,10 +89,20 @@ class ListingService:
                     "A paused listing must have a listed unit to be published."
                 )
 
+            old_status = listing.status
             listing.status = ListingStatus.PUBLISHED
             if listing.published_at is None:
                 listing.published_at = timezone.now()
             listing.save(update_fields=["status", "published_at", "updated_at"])
+            AuditLogService.log_action(
+                user=published_by,
+                action=AuditAction.LISTING_PUBLISHED,
+                model_name="Listing",
+                object_id=str(listing.pk),
+                old_data={"status": old_status},
+                new_data={"status": listing.status},
+                context=audit_context,
+            )
         return listing
 
     @staticmethod
@@ -105,7 +121,12 @@ class ListingService:
         return listing
 
     @staticmethod
-    def close_listing(listing: Listing) -> Listing:
+    def close_listing(
+        listing: Listing,
+        *,
+        closed_by: User | None = None,
+        audit_context: AuditContext | None = None,
+    ) -> Listing:
         with transaction.atomic():
             listing, unit = ListingService._lock_listing(listing)
             if listing.status != ListingStatus.PUBLISHED:
@@ -119,6 +140,15 @@ class ListingService:
             listing.save(update_fields=["status", "updated_at"])
             unit.status = UnitStatus.AVAILABLE
             unit.save(update_fields=["status", "updated_at"])
+            AuditLogService.log_action(
+                user=closed_by,
+                action=AuditAction.LISTING_CLOSED,
+                model_name="Listing",
+                object_id=str(listing.pk),
+                old_data={"status": ListingStatus.PUBLISHED},
+                new_data={"status": listing.status},
+                context=audit_context,
+            )
         return listing
 
     @staticmethod

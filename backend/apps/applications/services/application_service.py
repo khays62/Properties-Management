@@ -5,9 +5,19 @@ from django.db import IntegrityError, transaction
 from django.utils import timezone
 from rest_framework.exceptions import ValidationError
 
+from apps.accounts.models import User
+from apps.audit.services.audit_log_service import AuditContext, AuditLogService
 from apps.listings.models import Listing
+from apps.notifications.services.notification_service import NotificationService
 from apps.properties.services.validation import validate_model
-from common.constants import ApplicationStatus, ListingStatus, ScreeningStatus
+from common.constants import (
+    ApplicationStatus,
+    AuditAction,
+    ListingStatus,
+    NotificationType,
+    ScreeningStatus,
+    UserRole,
+)
 from common.exceptions import ConflictErrorResponse
 
 from ..models import (
@@ -113,7 +123,12 @@ class ApplicationService:
         return locked_application
 
     @staticmethod
-    def approve_application(application: RentalApplication) -> RentalApplication:
+    def approve_application(
+        application: RentalApplication,
+        *,
+        approved_by: User | None = None,
+        audit_context: AuditContext | None = None,
+    ) -> RentalApplication:
         with transaction.atomic():
             locked_application = ApplicationService._lock_application(application)
             if locked_application.status != ApplicationStatus.SCREENING:
@@ -130,8 +145,31 @@ class ApplicationService:
                 raise ConflictErrorResponse(
                     "A passed screening is required to approve an application."
                 )
+            old_status = locked_application.status
             locked_application.status = ApplicationStatus.APPROVED
             locked_application.save(update_fields=["status", "updated_at"])
+            AuditLogService.log_action(
+                user=approved_by,
+                action=AuditAction.APPLICATION_APPROVED,
+                model_name="RentalApplication",
+                object_id=str(locked_application.pk),
+                old_data={"status": old_status},
+                new_data={"status": locked_application.status},
+                context=audit_context,
+            )
+            applicant_user = ApplicationService._get_applicant_user(
+                locked_application
+            )
+            if applicant_user is not None:
+                NotificationService.create_notification(
+                    user=applicant_user,
+                    title="Application approved",
+                    message=(
+                        f"Your application for "
+                        f"{locked_application.listing.title} was approved."
+                    ),
+                    type=NotificationType.SYSTEM,
+                )
         return locked_application
 
     @staticmethod
@@ -139,6 +177,8 @@ class ApplicationService:
         application: RentalApplication,
         *,
         rejection_reason: str,
+        rejected_by: User | None = None,
+        audit_context: AuditContext | None = None,
     ) -> RentalApplication:
         normalized_reason = rejection_reason.strip()
         if not normalized_reason:
@@ -151,12 +191,46 @@ class ApplicationService:
                 raise ConflictErrorResponse(
                     "Only applications in screening can be rejected."
                 )
+            old_status = locked_application.status
             locked_application.status = ApplicationStatus.REJECTED
             locked_application.rejection_reason = normalized_reason
             locked_application.save(
                 update_fields=["status", "rejection_reason", "updated_at"]
             )
+            AuditLogService.log_action(
+                user=rejected_by,
+                action=AuditAction.APPLICATION_REJECTED,
+                model_name="RentalApplication",
+                object_id=str(locked_application.pk),
+                old_data={"status": old_status},
+                new_data={
+                    "status": locked_application.status,
+                    "rejection_reason": normalized_reason,
+                },
+                context=audit_context,
+            )
+            applicant_user = ApplicationService._get_applicant_user(
+                locked_application
+            )
+            if applicant_user is not None:
+                NotificationService.create_notification(
+                    user=applicant_user,
+                    title="Application update",
+                    message=(
+                        f"Your application for "
+                        f"{locked_application.listing.title} was not approved."
+                    ),
+                    type=NotificationType.SYSTEM,
+                )
         return locked_application
+
+    @staticmethod
+    def _get_applicant_user(application: RentalApplication) -> User | None:
+        return User.objects.filter(
+            email__iexact=application.applicant.email,
+            role=UserRole.TENANT,
+            is_active=True,
+        ).order_by("pk").first()
 
     @staticmethod
     def withdraw_application(application: RentalApplication) -> RentalApplication:

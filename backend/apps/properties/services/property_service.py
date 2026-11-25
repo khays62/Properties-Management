@@ -2,11 +2,11 @@ from typing import Any
 
 from django.db import IntegrityError, transaction
 
-from common.constants import PropertyStatus, UserRole
+from apps.accounts.models import User
+from apps.audit.services.audit_log_service import AuditContext, AuditLogService
+from common.constants import AuditAction, PropertyStatus, UserRole
 from common.exceptions import ConflictErrorResponse, PermissionDeniedResponse
 from common.permissions import get_user_role
-
-from apps.accounts.models import User
 
 from ..models import Property
 from .validation import validate_model
@@ -32,7 +32,12 @@ class PropertyService:
         return property_obj
 
     @staticmethod
-    def archive_property(property_obj: Property) -> Property:
+    def archive_property(
+        property_obj: Property,
+        *,
+        archived_by: User | None = None,
+        audit_context: AuditContext | None = None,
+    ) -> Property:
         with transaction.atomic():
             locked_property = Property.objects.select_for_update().get(
                 pk=property_obj.pk
@@ -40,6 +45,16 @@ class PropertyService:
             if locked_property.status != PropertyStatus.ACTIVE:
                 raise ConflictErrorResponse("Only active properties can be archived.")
 
+            old_status = locked_property.status
             locked_property.status = PropertyStatus.ARCHIVED
             locked_property.save(update_fields=["status", "updated_at"])
+            AuditLogService.log_action(
+                user=archived_by,
+                action=AuditAction.PROPERTY_ARCHIVED,
+                model_name="Property",
+                object_id=str(locked_property.pk),
+                old_data={"status": old_status},
+                new_data={"status": locked_property.status},
+                context=audit_context,
+            )
         return locked_property

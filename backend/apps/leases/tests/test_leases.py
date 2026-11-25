@@ -12,13 +12,17 @@ from rest_framework.test import APITestCase
 
 from apps.accounts.models import PropertyAssignment, User
 from apps.applications.models import Applicant, RentalApplication, Screening
+from apps.audit.models import AuditLog
 from apps.listings.services.listing_service import ListingService
+from apps.notifications.models import Notification
 from apps.properties.models import Property, Unit
 from common.constants import (
     ApplicationStatus,
+    AuditAction,
     EmploymentStatus,
     LeaseStatus,
     ListingStatus,
+    NotificationType,
     PropertyStatus,
     RenewalAlertStatus,
     ScreeningStatus,
@@ -246,6 +250,33 @@ class LeaseWorkflowTests(APITestCase):
         self.assertEqual(self.unit.status, UnitStatus.OCCUPIED)
         self.assertEqual(self.listing.status, ListingStatus.CLOSED)
         self.assertEqual(lease.tenant.status, TenantStatus.ACTIVE)
+        self.assertTrue(
+            AuditLog.objects.filter(
+                action=AuditAction.LEASE_APPROVED,
+                object_id=str(lease.pk),
+                user=self.owner,
+            ).exists()
+        )
+        self.assertTrue(
+            AuditLog.objects.filter(
+                action=AuditAction.LEASE_ACTIVATED,
+                object_id=str(lease.pk),
+                user=self.owner,
+            ).exists()
+        )
+        self.assertTrue(
+            AuditLog.objects.filter(
+                action=AuditAction.LISTING_CLOSED,
+                object_id=str(self.listing.pk),
+            ).exists()
+        )
+        self.assertEqual(
+            Notification.objects.filter(
+                user=lease.tenant.user,
+                type=NotificationType.LEASE,
+            ).count(),
+            2,
+        )
         self.assertEqual(
             list(lease.status_history.values_list("new_status", flat=True)),
             [
@@ -271,6 +302,13 @@ class LeaseWorkflowTests(APITestCase):
         self.assertEqual(successor.start_date, lease.end_date + timedelta(days=1))
         self.assertEqual(successor.tenant_id, lease.tenant_id)
         self.assertEqual(successor.unit_id, lease.unit_id)
+        self.assertTrue(
+            AuditLog.objects.filter(
+                action=AuditAction.LEASE_RENEWED,
+                object_id=str(lease.pk),
+                user=self.owner,
+            ).exists()
+        )
 
         LeaseService.approve_lease(successor, approved_by=self.owner)
         successor = LeaseService.activate_lease(successor, changed_by=self.owner)
@@ -348,6 +386,13 @@ class LeaseWorkflowTests(APITestCase):
                 new_status=LeaseStatus.EXPIRING,
             ).count(),
             1,
+        )
+        self.assertEqual(
+            Notification.objects.filter(
+                user=lease.tenant.user,
+                type=NotificationType.RENEWAL,
+            ).count(),
+            3,
         )
 
         alert = RenewalAlert.objects.get(

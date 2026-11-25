@@ -4,6 +4,8 @@ from rest_framework.decorators import action
 from rest_framework.request import Request
 from rest_framework.response import Response
 
+from apps.audit.services.audit_log_service import AuditContext
+
 from .models import Property, Unit, UnitImage
 from .permissions import CanManageProperty, CanManageUnit
 from .selectors.property_selector import PropertySelector
@@ -53,7 +55,11 @@ class PropertyViewSet(
     @action(detail=True, methods=["post"], url_path="archive")
     def archive(self, request: Request, pk: str | None = None) -> Response:
         property_obj = self.get_object()
-        archived_property = PropertyService.archive_property(property_obj)
+        archived_property = PropertyService.archive_property(
+            property_obj,
+            archived_by=request.user,
+            audit_context=AuditContext.from_request(request),
+        )
         return Response(self.get_serializer(archived_property).data)
 
 

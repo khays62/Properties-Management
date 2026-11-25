@@ -146,3 +146,26 @@ class MaintenanceActivityAction(models.TextChoices):
     RESOLVED = "RESOLVED", "Resolved"
     CLOSED = "CLOSED", "Closed"
     CANCELLED = "CANCELLED", "Cancelled"
+
+
+class NotificationType(models.TextChoices):
+    LEASE = "LEASE", "Lease"
+    PAYMENT = "PAYMENT", "Payment"
+    RENEWAL = "RENEWAL", "Renewal"
+    MAINTENANCE = "MAINTENANCE", "Maintenance"
+    SYSTEM = "SYSTEM", "System"
+
+
+class AuditAction(models.TextChoices):
+    PROPERTY_ARCHIVED = "PROPERTY_ARCHIVED", "Property archived"
+    LISTING_PUBLISHED = "LISTING_PUBLISHED", "Listing published"
+    LISTING_CLOSED = "LISTING_CLOSED", "Listing closed"
+    APPLICATION_APPROVED = "APPLICATION_APPROVED", "Application approved"
+    APPLICATION_REJECTED = "APPLICATION_REJECTED", "Application rejected"
+    LEASE_APPROVED = "LEASE_APPROVED", "Lease approved"
+    LEASE_ACTIVATED = "LEASE_ACTIVATED", "Lease activated"
+    LEASE_RENEWED = "LEASE_RENEWED", "Lease renewed"
+    PAYMENT_CREATED = "PAYMENT_CREATED", "Payment created"
+    PAYMENT_REVERSED = "PAYMENT_REVERSED", "Payment reversed"
+    MAINTENANCE_ASSIGNED = "MAINTENANCE_ASSIGNED", "Maintenance assigned"
+    MAINTENANCE_RESOLVED = "MAINTENANCE_RESOLVED", "Maintenance resolved"

@@ -4,8 +4,9 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 
+from apps.audit.models import AuditLog
 from apps.accounts.models import User
-from common.constants import PropertyStatus, UnitStatus, UserRole
+from common.constants import AuditAction, PropertyStatus, UnitStatus, UserRole
 
 from ..models import Property, Unit
 from ..services.property_service import PropertyService
@@ -146,6 +147,14 @@ class PropertyApiTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.property.refresh_from_db()
         self.assertEqual(self.property.status, PropertyStatus.ARCHIVED)
+        self.assertTrue(
+            AuditLog.objects.filter(
+                action=AuditAction.PROPERTY_ARCHIVED,
+                model_name="Property",
+                object_id=str(self.property.pk),
+                user=self.owner,
+            ).exists()
+        )
 
     def test_unit_availability_returns_requested_status_counts(self):
         statuses = (

@@ -5,8 +5,15 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from apps.accounts.models import User
+from apps.audit.models import AuditLog
 from apps.properties.models import Property, Unit
-from common.constants import ListingStatus, PropertyStatus, UnitStatus, UserRole
+from common.constants import (
+    AuditAction,
+    ListingStatus,
+    PropertyStatus,
+    UnitStatus,
+    UserRole,
+)
 from common.exceptions import ConflictErrorResponse
 
 from ..services.listing_service import ListingService
@@ -104,6 +111,14 @@ class ListingApiTests(APITestCase):
         self.assertEqual(listing.status, ListingStatus.PUBLISHED)
         self.assertIsNotNone(listing.published_at)
         self.assertEqual(self.unit.status, UnitStatus.LISTED)
+        self.assertTrue(
+            AuditLog.objects.filter(
+                action=AuditAction.LISTING_PUBLISHED,
+                model_name="Listing",
+                object_id=str(listing.pk),
+                user=self.owner,
+            ).exists()
+        )
 
     def test_pause_listing_keeps_unit_listed(self):
         listing = self.create_listing()
@@ -136,6 +151,14 @@ class ListingApiTests(APITestCase):
         self.unit.refresh_from_db()
         self.assertEqual(listing.status, ListingStatus.CLOSED)
         self.assertEqual(self.unit.status, UnitStatus.AVAILABLE)
+        self.assertTrue(
+            AuditLog.objects.filter(
+                action=AuditAction.LISTING_CLOSED,
+                model_name="Listing",
+                object_id=str(listing.pk),
+                user=self.owner,
+            ).exists()
+        )
 
     def test_unit_cannot_have_multiple_active_listings(self):
         first_listing = self.create_listing(title="First")

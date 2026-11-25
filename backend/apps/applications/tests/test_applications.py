@@ -7,11 +7,15 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from apps.accounts.models import PropertyAssignment, User
+from apps.audit.models import AuditLog
 from apps.listings.services.listing_service import ListingService
+from apps.notifications.models import Notification
 from apps.properties.models import Property, Unit
 from common.constants import (
     ApplicationStatus,
+    AuditAction,
     EmploymentStatus,
+    NotificationType,
     PropertyStatus,
     ScreeningStatus,
     UnitStatus,
@@ -227,6 +231,11 @@ class ApplicationsApiTests(APITestCase):
             {"score": 90},
             format="json",
         )
+        applicant_user = User.objects.create_user(
+            email="applicant@example.com",
+            password="test-password",
+            role=UserRole.TENANT,
+        )
         response = self.client.post(
             reverse("applications:application-approve", kwargs={"pk": application_id}),
             {},
@@ -235,6 +244,19 @@ class ApplicationsApiTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["status"], ApplicationStatus.APPROVED)
+        self.assertTrue(
+            AuditLog.objects.filter(
+                action=AuditAction.APPLICATION_APPROVED,
+                object_id=application_id,
+                user=self.owner,
+            ).exists()
+        )
+        self.assertTrue(
+            Notification.objects.filter(
+                user=applicant_user,
+                type=NotificationType.SYSTEM,
+            ).exists()
+        )
 
     def test_application_rejection_requires_reason(self):
         application_id, screening = self.start_screening()
@@ -251,6 +273,11 @@ class ApplicationsApiTests(APITestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
+        applicant_user = User.objects.create_user(
+            email="applicant@example.com",
+            password="test-password",
+            role=UserRole.TENANT,
+        )
         response = self.client.post(
             reverse("applications:application-reject", kwargs={"pk": application_id}),
             {"rejection_reason": "Screening requirements were not met."},
@@ -258,6 +285,19 @@ class ApplicationsApiTests(APITestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["status"], ApplicationStatus.REJECTED)
+        self.assertTrue(
+            AuditLog.objects.filter(
+                action=AuditAction.APPLICATION_REJECTED,
+                object_id=application_id,
+                user=self.owner,
+            ).exists()
+        )
+        self.assertTrue(
+            Notification.objects.filter(
+                user=applicant_user,
+                type=NotificationType.SYSTEM,
+            ).exists()
+        )
 
     def test_withdrawal_is_allowed_before_screening(self):
         application_id = self.submit_application()

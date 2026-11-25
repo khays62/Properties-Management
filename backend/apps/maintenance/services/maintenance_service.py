@@ -5,14 +5,18 @@ from django.utils import timezone
 from rest_framework.exceptions import ValidationError
 
 from apps.accounts.models import User
+from apps.audit.services.audit_log_service import AuditContext, AuditLogService
 from apps.leases.models import Lease, Tenant
+from apps.notifications.services.notification_service import NotificationService
 from apps.properties.models import Unit
 from apps.properties.selectors.property_selector import PropertySelector
 from apps.properties.services.validation import validate_model
 from common.constants import (
+    AuditAction,
     LeaseStatus,
     MaintenanceActivityAction,
     MaintenanceStatus,
+    NotificationType,
     UnitStatus,
     UserRole,
 )
@@ -147,6 +151,7 @@ class MaintenanceService:
         assigned_to: User,
         assigned_by: User,
         notes: str = "",
+        audit_context: AuditContext | None = None,
     ) -> MaintenanceTicket:
         with transaction.atomic():
             locked_ticket = MaintenanceService._lock_ticket(ticket)
@@ -168,6 +173,7 @@ class MaintenanceService:
                     {"assigned_to": "The manager is not assigned to this property."}
                 )
 
+            old_status = locked_ticket.status
             locked_ticket.assigned_to = assigned_to
             locked_ticket.status = MaintenanceStatus.ASSIGNED
             locked_ticket.save(
@@ -178,6 +184,33 @@ class MaintenanceService:
                 action=MaintenanceActivityAction.ASSIGNED,
                 performed_by=assigned_by,
                 notes=notes or f"Assigned to {assigned_to.email}.",
+            )
+            AuditLogService.log_action(
+                user=assigned_by,
+                action=AuditAction.MAINTENANCE_ASSIGNED,
+                model_name="MaintenanceTicket",
+                object_id=str(locked_ticket.pk),
+                old_data={
+                    "status": old_status,
+                    "assigned_to": None,
+                },
+                new_data={
+                    "status": locked_ticket.status,
+                    "assigned_to": str(assigned_to.pk),
+                },
+                context=audit_context,
+            )
+            NotificationService.create_notification(
+                user=assigned_to,
+                title="Maintenance ticket assigned",
+                message=f"Ticket '{locked_ticket.title}' has been assigned to you.",
+                type=NotificationType.MAINTENANCE,
+            )
+            NotificationService.create_notification(
+                user=locked_ticket.tenant.user,
+                title="Maintenance ticket update",
+                message=f"Your ticket '{locked_ticket.title}' has been assigned.",
+                type=NotificationType.MAINTENANCE,
             )
         return locked_ticket
 
@@ -211,6 +244,7 @@ class MaintenanceService:
         *,
         resolved_by: User,
         resolution_notes: str,
+        audit_context: AuditContext | None = None,
     ) -> MaintenanceTicket:
         notes = resolution_notes.strip()
         if not notes:
@@ -227,6 +261,7 @@ class MaintenanceService:
                 raise ConflictErrorResponse(
                     "Only in-progress tickets can be resolved."
                 )
+            old_status = locked_ticket.status
             locked_ticket.status = MaintenanceStatus.RESOLVED
             locked_ticket.resolution_notes = notes
             locked_ticket.save(
@@ -237,6 +272,24 @@ class MaintenanceService:
                 action=MaintenanceActivityAction.RESOLVED,
                 performed_by=resolved_by,
                 notes=notes,
+            )
+            AuditLogService.log_action(
+                user=resolved_by,
+                action=AuditAction.MAINTENANCE_RESOLVED,
+                model_name="MaintenanceTicket",
+                object_id=str(locked_ticket.pk),
+                old_data={"status": old_status},
+                new_data={
+                    "status": locked_ticket.status,
+                    "resolution_notes": notes,
+                },
+                context=audit_context,
+            )
+            NotificationService.create_notification(
+                user=locked_ticket.tenant.user,
+                title="Maintenance ticket resolved",
+                message=f"Your ticket '{locked_ticket.title}' has been resolved.",
+                type=NotificationType.MAINTENANCE,
             )
         return locked_ticket
 

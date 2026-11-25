@@ -50,3 +50,18 @@ Finance actions run through services and database transactions. Accountants have
 6. Tenants can view and upload attachments only on their own tickets. Attachments are limited to JPG, JPEG, PNG, and PDF files up to 5 MB.
 
 Owners and property managers only see tickets for owned or actively assigned properties. Tenants see only their own tickets and activity history.
+
+## Notifications
+
+1. Notifications are created for a specific user and are unread by default. Users can list, retrieve, search, and mark read only their own notifications.
+2. The notification service marks one notification or all of the current user's unread notifications as read.
+3. Lease approval and activation, payment creation and reversal, and maintenance assignment and resolution create notifications for the tenant. Application approval and rejection notify an existing tenant account that matches the applicant's email.
+4. Renewal-alert generation creates a tenant notification only when it creates a new 90-, 60-, or 30-day alert, so rerunning the generator does not duplicate notifications for existing alerts.
+5. Notifications are created in the same transaction as the domain workflow. Application notifications require an existing tenant account; the application workflow does not provision accounts.
+
+## Audit history
+
+1. Domain services append audit records for property archival, listing publication and closure, application approval and rejection, lease approval, activation and renewal, payment creation and reversal, and maintenance assignment and resolution.
+2. Each record captures the actor, action, model and object identifiers, optional old/new data, and request IP address and user agent where the workflow has request context.
+3. Audit records are append-only. The API is read-only and available to owners, property managers, and accountants; tenants cannot read audit history.
+4. Audit writes occur in the corresponding domain transaction, so a failed workflow does not leave a success-shaped audit record.

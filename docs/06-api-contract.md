@@ -104,3 +104,16 @@ Ticket workflow actions:
 - `POST /api/v1/maintenance-tickets/{id}/cancel/` with optional `notes`
 
 Ticket detail includes its activity history and attachments. Attachments can be uploaded to `/api/v1/maintenance-attachments/` as multipart form data with `ticket` and `file`; allowed file extensions are JPG, JPEG, PNG, and PDF, with a 5 MB maximum. Activities are read-only at `/api/v1/maintenance-activities/` and can be filtered by `ticket`.
+
+## Notifications
+
+`/api/v1/notifications/` lists only the authenticated user's notifications. List filters are `is_read`, `type`, and `search`; detail access is also user-scoped.
+
+- `POST /api/v1/notifications/{id}/mark-read/`
+- `POST /api/v1/notifications/mark-all-read/`
+
+The mark-all-read response includes `updated_count`.
+
+## Audit
+
+`/api/v1/audit-logs/` is read-only and restricted to owners, property managers, and accountants. Tenants are denied access. List filters are `action`, `model_name`, `user`, `date` (`YYYY-MM-DD`), and `search`; `object_id` can additionally scope logs to one object.

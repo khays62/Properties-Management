@@ -11,15 +11,19 @@ from rest_framework.test import APITestCase
 
 from apps.accounts.models import PropertyAssignment, User
 from apps.applications.models import Applicant, RentalApplication, Screening
+from apps.audit.models import AuditLog
 from apps.leases.models import Lease, Tenant
 from apps.leases.services.lease_service import LeaseService
 from apps.listings.services.listing_service import ListingService
+from apps.notifications.models import Notification
 from apps.properties.models import Property, Unit
 from common.constants import (
     ApplicationStatus,
+    AuditAction,
     DepositStatus,
     EmploymentStatus,
     LeaseStatus,
+    NotificationType,
     PaymentMethod,
     PaymentStatus,
     PropertyStatus,
@@ -443,6 +447,27 @@ class FinanceApiTests(APITestCase):
         self.assertEqual(charge.status, RentChargeStatus.PENDING)
         self.assertEqual(payment.status, PaymentStatus.REVERSED)
         self.assertTrue(Receipt.objects.filter(payment=payment).exists())
+        self.assertTrue(
+            AuditLog.objects.filter(
+                action=AuditAction.PAYMENT_CREATED,
+                object_id=str(payment.pk),
+                user=self.owner,
+            ).exists()
+        )
+        self.assertTrue(
+            AuditLog.objects.filter(
+                action=AuditAction.PAYMENT_REVERSED,
+                object_id=str(payment.pk),
+                user=self.owner,
+            ).exists()
+        )
+        self.assertEqual(
+            Notification.objects.filter(
+                user=self.tenant.user,
+                type=NotificationType.PAYMENT,
+            ).count(),
+            2,
+        )
 
     def test_receipt_generation_is_idempotent(self):
         charge = self.create_charge()

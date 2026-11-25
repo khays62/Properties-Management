@@ -11,15 +11,19 @@ from rest_framework.test import APITestCase
 
 from apps.accounts.models import PropertyAssignment, User
 from apps.applications.models import Applicant, RentalApplication
+from apps.audit.models import AuditLog
 from apps.leases.models import Lease, Tenant
 from apps.listings.services.listing_service import ListingService
+from apps.notifications.models import Notification
 from apps.properties.models import Property, Unit
 from common.constants import (
     ApplicationStatus,
+    AuditAction,
     EmploymentStatus,
     LeaseStatus,
     MaintenanceActivityAction,
     MaintenanceStatus,
+    NotificationType,
     PropertyStatus,
     TenantStatus,
     UnitStatus,
@@ -228,6 +232,34 @@ class MaintenanceApiTests(APITestCase):
                 MaintenanceActivityAction.RESOLVED,
                 MaintenanceActivityAction.CLOSED,
             },
+        )
+        self.assertTrue(
+            AuditLog.objects.filter(
+                action=AuditAction.MAINTENANCE_ASSIGNED,
+                object_id=str(ticket.pk),
+                user=self.manager,
+            ).exists()
+        )
+        self.assertTrue(
+            AuditLog.objects.filter(
+                action=AuditAction.MAINTENANCE_RESOLVED,
+                object_id=str(ticket.pk),
+                user=self.manager,
+            ).exists()
+        )
+        self.assertEqual(
+            Notification.objects.filter(
+                user=self.tenant_user,
+                type=NotificationType.MAINTENANCE,
+            ).count(),
+            2,
+        )
+        self.assertEqual(
+            Notification.objects.filter(
+                user=self.manager,
+                type=NotificationType.MAINTENANCE,
+            ).count(),
+            1,
         )
 
     def test_only_open_tickets_can_be_assigned_or_cancelled(self):

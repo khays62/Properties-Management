@@ -6,6 +6,8 @@ from rest_framework.decorators import action
 from rest_framework.request import Request
 from rest_framework.response import Response
 
+from apps.audit.services.audit_log_service import AuditContext
+
 from .models import (
     MaintenanceActivity,
     MaintenanceAttachment,
@@ -93,6 +95,7 @@ class MaintenanceTicketViewSet(
             assigned_to=input_serializer.validated_data["assigned_to"],
             assigned_by=request.user,
             notes=input_serializer.validated_data.get("notes", ""),
+            audit_context=AuditContext.from_request(request),
         )
         return Response(self.get_serializer(ticket).data)
 
@@ -114,6 +117,7 @@ class MaintenanceTicketViewSet(
         ticket = MaintenanceService.resolve_ticket(
             self.get_object(),
             resolved_by=request.user,
+            audit_context=AuditContext.from_request(request),
             **input_serializer.validated_data,
         )
         return Response(self.get_serializer(ticket).data)

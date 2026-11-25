@@ -5,10 +5,17 @@ from django.utils import timezone
 from rest_framework.exceptions import ValidationError
 
 from apps.accounts.models import User
+from apps.audit.services.audit_log_service import AuditContext, AuditLogService
 from apps.leases.models import Tenant
-from common.constants import PaymentStatus, RentChargeStatus
-from common.exceptions import ConflictErrorResponse, PermissionDeniedResponse
+from apps.notifications.services.notification_service import NotificationService
 from apps.properties.services.validation import validate_model
+from common.constants import (
+    AuditAction,
+    NotificationType,
+    PaymentStatus,
+    RentChargeStatus,
+)
+from common.exceptions import ConflictErrorResponse, PermissionDeniedResponse
 
 from ..models import Payment, PaymentAllocation, RentCharge
 from ..selectors.finance_access_selector import FinanceAccessSelector
@@ -27,6 +34,7 @@ class PaymentService:
         reference_number: str,
         payment_method: str,
         notes: str = "",
+        audit_context: AuditContext | None = None,
     ) -> Payment:
         if not PaymentSelector.user_can_manage_tenant(
             user=created_by,
@@ -52,6 +60,28 @@ class PaymentService:
         try:
             with transaction.atomic():
                 payment.save()
+                AuditLogService.log_action(
+                    user=created_by,
+                    action=AuditAction.PAYMENT_CREATED,
+                    model_name="Payment",
+                    object_id=str(payment.pk),
+                    new_data={
+                        "amount": str(payment.amount),
+                        "reference_number": payment.reference_number,
+                        "payment_method": payment.payment_method,
+                        "status": payment.status,
+                    },
+                    context=audit_context,
+                )
+                NotificationService.create_notification(
+                    user=tenant.user,
+                    title="Payment recorded",
+                    message=(
+                        f"Payment {payment.reference_number} for "
+                        f"{payment.amount} was recorded."
+                    ),
+                    type=NotificationType.PAYMENT,
+                )
         except IntegrityError as exc:
             raise ConflictErrorResponse(
                 "This payment reference number is already in use."
@@ -183,7 +213,12 @@ class PaymentService:
         return locked_payment
 
     @staticmethod
-    def reverse_payment(payment: Payment, *, reversed_by: User) -> Payment:
+    def reverse_payment(
+        payment: Payment,
+        *,
+        reversed_by: User,
+        audit_context: AuditContext | None = None,
+    ) -> Payment:
         with transaction.atomic():
             locked_payment = (
                 Payment.objects.select_for_update()
@@ -240,6 +275,24 @@ class PaymentService:
                     charge.status = RentChargeStatus.PARTIALLY_PAID
                 charge.save(update_fields=["balance", "status", "updated_at"])
 
+            old_status = locked_payment.status
             locked_payment.status = PaymentStatus.REVERSED
             locked_payment.save(update_fields=["status", "updated_at"])
+            AuditLogService.log_action(
+                user=reversed_by,
+                action=AuditAction.PAYMENT_REVERSED,
+                model_name="Payment",
+                object_id=str(locked_payment.pk),
+                old_data={"status": old_status},
+                new_data={"status": locked_payment.status},
+                context=audit_context,
+            )
+            NotificationService.create_notification(
+                user=locked_payment.tenant.user,
+                title="Payment reversed",
+                message=(
+                    f"Payment {locked_payment.reference_number} was reversed."
+                ),
+                type=NotificationType.PAYMENT,
+            )
         return locked_payment

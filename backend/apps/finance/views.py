@@ -4,6 +4,8 @@ from rest_framework.decorators import action
 from rest_framework.request import Request
 from rest_framework.response import Response
 
+from apps.audit.services.audit_log_service import AuditContext
+
 from .models import Deposit, Payment, Receipt, RentCharge, RentSchedule
 from .permissions import CanManageFinance, CanManagePayments
 from .selectors.deposit_selector import DepositSelector
@@ -189,6 +191,7 @@ class PaymentViewSet(
     def perform_create(self, serializer: serializers.BaseSerializer) -> None:
         serializer.instance = PaymentService.create_payment(
             created_by=self.request.user,
+            audit_context=AuditContext.from_request(self.request),
             **serializer.validated_data,
         )
 
@@ -213,6 +216,7 @@ class PaymentViewSet(
         payment = PaymentService.reverse_payment(
             self.get_object(),
             reversed_by=request.user,
+            audit_context=AuditContext.from_request(request),
         )
         return Response(
             PaymentDetailSerializer(
