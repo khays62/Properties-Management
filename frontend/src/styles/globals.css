@@ -2,6 +2,9 @@
 @import "./theme.css";
 @import "./components.css";
 
+@tailwind base;
+@tailwind components;
+
 *,
 *::before,
 *::after {
@@ -61,3 +64,5 @@ button,
   clip-path: inset(50%);
   border: 0;
 }
+
+@tailwind utilities;
