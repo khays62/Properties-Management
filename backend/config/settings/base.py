@@ -1,19 +1,48 @@
 from pathlib import Path
 import os
 
+from django.core.exceptions import ImproperlyConfigured
 from dotenv import load_dotenv
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 load_dotenv(BASE_DIR / ".env")
 
-SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "change-me")
-DEBUG = os.getenv("DJANGO_DEBUG", "False").lower() == "true"
+
+def _get_bool_setting(name: str, default: bool = False) -> bool:
+    value = os.getenv(name)
+    if value is None:
+        return default
+
+    normalized_value = value.strip().lower()
+    if normalized_value in {"1", "true", "yes", "on"}:
+        return True
+    if normalized_value in {"0", "false", "no", "off"}:
+        return False
+    raise ImproperlyConfigured(f"{name} must be a boolean value.")
+
+
+def _get_path_setting(name: str, default: Path) -> Path:
+    path = Path(os.getenv(name, str(default)))
+    return path if path.is_absolute() else BASE_DIR / path
+
+
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "").strip()
+if not SECRET_KEY:
+    raise ImproperlyConfigured("DJANGO_SECRET_KEY must be configured.")
+
+DEBUG = _get_bool_setting("DJANGO_DEBUG")
 ALLOWED_HOSTS = [
     host.strip()
-    for host in os.getenv("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
+    for host in os.getenv("DJANGO_ALLOWED_HOSTS", "").split(",")
     if host.strip()
 ]
+CORS_ALLOWED_ORIGINS = [
+    origin.strip()
+    for origin in os.getenv("CORS_ALLOWED_ORIGINS", "").split(",")
+    if origin.strip()
+]
+CORS_ALLOW_CREDENTIALS = _get_bool_setting("CORS_ALLOW_CREDENTIALS")
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -22,10 +51,13 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "corsheaders",
     "django_filters",
     "rest_framework",
     "rest_framework_simplejwt",
     "drf_spectacular",
+    "apps.accounts.apps.AccountsConfig",
+    "apps.properties.apps.PropertiesConfig",
 ]
 
 MIDDLEWARE = [
@@ -62,23 +94,36 @@ WSGI_APPLICATION = "config.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.getenv("POSTGRES_DB", "omniproperties"),
-        "USER": os.getenv("POSTGRES_USER", "omniproperties"),
+        "NAME": os.getenv("POSTGRES_DB", ""),
+        "USER": os.getenv("POSTGRES_USER", ""),
         "PASSWORD": os.getenv("POSTGRES_PASSWORD", ""),
-        "HOST": os.getenv("POSTGRES_HOST", "localhost"),
-        "PORT": os.getenv("POSTGRES_PORT", "5432"),
+        "HOST": os.getenv("POSTGRES_HOST", ""),
+        "PORT": os.getenv("POSTGRES_PORT", ""),
     }
 }
+missing_database_settings = [
+    setting
+    for setting in ("NAME", "USER", "HOST", "PORT")
+    if not DATABASES["default"][setting]
+]
+if missing_database_settings:
+    missing_environment_variables = ", ".join(
+        f"POSTGRES_{setting}" for setting in missing_database_settings
+    )
+    raise ImproperlyConfigured(
+        "Missing required PostgreSQL environment variables: "
+        f"{missing_environment_variables}."
+    )
 
 LANGUAGE_CODE = "en-us"
-TIME_ZONE = "UTC"
+TIME_ZONE = os.getenv("TIME_ZONE", "Africa/Mogadishu")
 USE_I18N = True
 USE_TZ = True
 
-STATIC_URL = "/static/"
-STATIC_ROOT = BASE_DIR / "staticfiles"
-MEDIA_URL = "/media/"
-MEDIA_ROOT = BASE_DIR / "media"
+STATIC_URL = os.getenv("STATIC_URL", "/static/")
+STATIC_ROOT = _get_path_setting("STATIC_ROOT", BASE_DIR / "staticfiles")
+MEDIA_URL = os.getenv("MEDIA_URL", "/media/")
+MEDIA_ROOT = _get_path_setting("MEDIA_ROOT", BASE_DIR / "media")
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
@@ -86,7 +131,15 @@ REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "DEFAULT_PAGINATION_CLASS": "common.pagination.DefaultPagination",
     "PAGE_SIZE": 20,
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticated",
+    ],
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ],
 }
+
+AUTH_USER_MODEL = "accounts.User"
 
 SPECTACULAR_SETTINGS = {
     "TITLE": "OmniProperties API",
