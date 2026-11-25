@@ -102,6 +102,17 @@ class PaymentStatus(models.TextChoices):
     REVERSED = "REVERSED", "Reversed"
 
 
+class PaymentMethod(models.TextChoices):
+    CASH = "CASH", "Cash"
+    BANK_TRANSFER = "BANK_TRANSFER", "Bank Transfer"
+    MOBILE_MONEY = "MOBILE_MONEY", "Mobile Money"
+    CARD = "CARD", "Card"
+
+
+class RentFrequency(models.TextChoices):
+    MONTHLY = "MONTHLY", "Monthly"
+
+
 class MaintenanceStatus(models.TextChoices):
     OPEN = "OPEN", "Open"
     ASSIGNED = "ASSIGNED", "Assigned"

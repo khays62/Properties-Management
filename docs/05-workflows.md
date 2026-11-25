@@ -27,3 +27,15 @@ Application and screening records are visible only to owners of the related prop
 The renewal service creates idempotent alerts 90, 60, and 30 days before lease expiry. When an active lease enters its 90-day window, it moves to `EXPIRING` and a status-history entry is recorded. The generation service must be called by a scheduled job; no scheduler is configured by this module.
 
 Tenant users can view only their own leases and renewal alerts. Owner and property-manager access is scoped to owned or actively assigned properties.
+
+## Rent, deposits, and payments
+
+1. After a lease is activated, an owner, assigned property manager, or accountant creates its monthly rent schedule. The schedule uses the lease's payment due day.
+2. The monthly charge generator creates one charge per lease and billing month/year. The charge starts with `balance == amount`; duplicate generation returns the existing charge. Due days beyond a month's length are clamped to that month's last day.
+3. Deposit records are separate from rent charges. Deposit payments only update the deposit's paid amount and status; they never create or reduce rent allocations.
+4. A payment is recorded as `PENDING` with a unique reference. It can then be allocated across one or more of that tenant's rent charges. Allocations must sum to the payment amount and cannot exceed any charge's remaining balance.
+5. Allocation updates each rent charge balance and status atomically. A fully paid charge becomes `PAID`; a partial charge becomes `PARTIALLY_PAID` unless its due date has passed, in which case it remains `OVERDUE`. A receipt is generated once the payment is completed.
+6. Reversing a completed payment restores its allocations to the original charge balances and marks the payment `REVERSED`. The receipt and allocation rows remain as financial history.
+7. Charges with a positive balance become `OVERDUE` only after their due date. A generator run also creates past-due charges with `OVERDUE` status.
+
+Finance actions run through services and database transactions. Accountants have finance-wide access; owners and property managers are restricted to their properties; tenant users can read only their own deposits, charges, payments, and receipts.

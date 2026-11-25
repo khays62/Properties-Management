@@ -65,3 +65,28 @@ Renewal alerts are available at `/api/v1/renewal-alerts/`; list filters are `sta
 - `POST /api/v1/renewal-alerts/{id}/resolve/`
 
 `/api/v1/tenants/` is restricted to owners and assigned property managers and supports `status` and `search` filters.
+
+## Finance
+
+Finance write actions are restricted to accountants, owners, and assigned property managers. Tenants may only list and retrieve their own deposits, rent charges, payments, and receipts.
+
+- `POST /api/v1/deposits/` with `{"lease": "<lease-uuid>"}` creates the lease's deposit record.
+- `POST /api/v1/deposits/{id}/record-payment/` accepts `amount`, `reference_number`, `payment_method`, and optional `payment_date`.
+- `POST /api/v1/deposits/{id}/refund/` accepts an optional `amount`; omitting it refunds the remaining paid amount.
+- `POST /api/v1/deposits/{id}/forfeit/`
+
+Deposit filters are `status` and `lease` (also supports `tenant` and `search`).
+
+`POST /api/v1/rent-schedules/` creates a monthly schedule for an active lease; its due day must match the lease. Schedules are listed at `/api/v1/rent-schedules/`.
+
+- `POST /api/v1/rent-charges/generate/` accepts `billing_month` and `billing_year` and generates charges for accessible active schedules.
+- `POST /api/v1/rent-charges/{id}/mark-overdue/`
+
+Rent charge filters are `status`, `tenant`, `lease`, `billing_month`, `billing_year`, and `search`.
+
+`POST /api/v1/payments/` records a pending payment with `tenant`, `amount`, `payment_date`, `reference_number`, and `payment_method`.
+`POST /api/v1/payments/{id}/allocate/` accepts `{"allocations": [{"rent_charge": "<charge-uuid>", "amount_allocated": "100.00"}]}`. Allocations must equal the payment amount; successful allocation completes the payment and generates its receipt.
+
+- `POST /api/v1/payments/{id}/reverse/`
+
+Payment filters are `status`, `tenant`, `payment_method`, and `search`. Receipts are read-only at `/api/v1/receipts/`; filters include `tenant`, `payment`, and `search`.

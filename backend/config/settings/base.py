@@ -61,6 +61,7 @@ INSTALLED_APPS = [
     "apps.listings.apps.ListingsConfig",
     "apps.applications.apps.ApplicationsConfig",
     "apps.leases.apps.LeasesConfig",
+    "apps.finance.apps.FinanceConfig",
 ]
 
 MIDDLEWARE = [
