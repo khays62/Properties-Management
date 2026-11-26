@@ -71,7 +71,9 @@ export function AppShell({
   const navigation = DEFAULT_SIDEBAR_ITEMS.filter(
     (item) =>
       item.id === "dashboard" ||
-      ((item.id === "properties" || item.id === "units") &&
+      ((item.id === "properties" ||
+        item.id === "units" ||
+        item.id === "listings") &&
         canManageProperties),
   ).map((item) => ({
     ...item,

@@ -21,6 +21,10 @@ import {
   UnitListPage,
 } from "./features/units/pages";
 import {
+  ListingDetailsPage,
+  ListingListPage,
+} from "./features/listings/pages";
+import {
   ApplicationsPage,
   FinancePage,
   LeasesPage,
@@ -143,6 +147,22 @@ export default function App() {
               element={
                 <WorkflowRoute allowedRoles={MANAGEMENT_ROLES}>
                   <UnitDetailsPage />
+                </WorkflowRoute>
+              }
+            />
+            <Route
+              path="/listings"
+              element={
+                <WorkflowRoute allowedRoles={MANAGEMENT_ROLES}>
+                  <ListingListPage />
+                </WorkflowRoute>
+              }
+            />
+            <Route
+              path="/listings/:listingId"
+              element={
+                <WorkflowRoute allowedRoles={MANAGEMENT_ROLES}>
+                  <ListingDetailsPage />
                 </WorkflowRoute>
               }
             />
