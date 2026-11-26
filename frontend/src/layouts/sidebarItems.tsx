@@ -75,6 +75,22 @@ export const DEFAULT_SIDEBAR_ITEMS: readonly SidebarItem[] = [
     ),
   },
   {
+    id: "applications",
+    label: "Applications",
+    href: "/applications",
+    icon: (
+      <svg fill="none" viewBox="0 0 24 24">
+        <path
+          d="M7 4h10a2 2 0 0 1 2 2v14H5V6a2 2 0 0 1 2-2Zm2 5h6m-6 4h6m-6 4h3"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="1.7"
+        />
+      </svg>
+    ),
+  },
+  {
     id: "finance",
     label: "Finance",
     href: "/finance",

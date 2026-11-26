@@ -25,6 +25,10 @@ import {
   ListingListPage,
 } from "./features/listings/pages";
 import {
+  ApplicationDetailsPage,
+  ApplicationListPage,
+} from "./features/applications/pages";
+import {
   ApplicationsPage,
   FinancePage,
   LeasesPage,
@@ -163,6 +167,22 @@ export default function App() {
               element={
                 <WorkflowRoute allowedRoles={MANAGEMENT_ROLES}>
                   <ListingDetailsPage />
+                </WorkflowRoute>
+              }
+            />
+            <Route
+              path="/applications"
+              element={
+                <WorkflowRoute allowedRoles={MANAGEMENT_ROLES}>
+                  <ApplicationListPage />
+                </WorkflowRoute>
+              }
+            />
+            <Route
+              path="/applications/:applicationId"
+              element={
+                <WorkflowRoute allowedRoles={MANAGEMENT_ROLES}>
+                  <ApplicationDetailsPage />
                 </WorkflowRoute>
               }
             />

@@ -27,18 +27,25 @@ export function SearchFilterBar({
 
   return (
     <div
-      className={["grid gap-4 rounded-lg border border-[var(--color-border)] bg-card p-4 lg:grid-cols-[minmax(16rem,1fr)_2fr]", className]
+      className={[
+        "rounded-lg border border-[var(--color-border)] bg-card p-4",
+        className,
+      ]
         .filter(Boolean)
         .join(" ")}
     >
-      <SearchInput
-        value={searchValue}
-        onValueChange={onSearchValueChange}
-        onSearch={onSearch}
-        label={searchLabel}
-        className="max-w-xl"
-      />
       <FilterBar
+        layout="toolbar"
+        ariaLabel="Search and filters"
+        leadingControl={
+          <SearchInput
+            value={searchValue}
+            onValueChange={onSearchValueChange}
+            onSearch={onSearch}
+            label={searchLabel}
+            className="w-full"
+          />
+        }
         filters={filters}
         onFilterChange={onFilterChange}
         onReset={onReset}

@@ -1,3 +1,5 @@
+import type { ReactNode } from "react";
+
 import { Button } from "../ui/Button";
 import { Input } from "../ui/Input";
 import { Select } from "../ui/Select";
@@ -33,6 +35,9 @@ export interface FilterBarProps {
   filters: readonly FilterDefinition[];
   onFilterChange: (filterId: string, value: string) => void;
   onReset: () => void;
+  leadingControl?: ReactNode;
+  layout?: "flex" | "toolbar";
+  ariaLabel?: string;
   resetDisabled?: boolean;
   resetLabel?: string;
   className?: string;
@@ -41,23 +46,40 @@ export interface FilterBarProps {
 export function FilterBar({
   className,
   filters,
+  leadingControl,
+  layout = "flex",
   onFilterChange,
   onReset,
+  ariaLabel = "Filters",
   resetDisabled,
   resetLabel = "Reset filters",
 }: FilterBarProps) {
   const hasActiveFilters = filters.some((filter) => filter.value !== "");
+  const isToolbar = layout === "toolbar";
 
   return (
     <div
       role="group"
-      aria-label="Filters"
-      className={["flex flex-wrap items-end gap-3", className]
+      aria-label={ariaLabel}
+      className={[
+        isToolbar
+          ? "grid grid-cols-[repeat(auto-fit,minmax(min(100%,10rem),1fr))] items-end gap-3"
+          : "flex flex-wrap items-end gap-3",
+        className,
+      ]
         .filter(Boolean)
         .join(" ")}
     >
+      {leadingControl && (
+        <div className={isToolbar ? "min-w-0" : "min-w-[12rem] flex-1"}>
+          {leadingControl}
+        </div>
+      )}
       {filters.map((filter) => (
-        <div key={filter.id} className="min-w-[12rem] flex-1">
+        <div
+          key={filter.id}
+          className={isToolbar ? "min-w-0" : "min-w-[12rem] flex-1"}
+        >
           {filter.type === "text" ? (
             <Input
               id={`filter-${filter.id}`}
@@ -109,7 +131,11 @@ export function FilterBar({
         variant="secondary"
         onClick={onReset}
         disabled={resetDisabled ?? !hasActiveFilters}
-        className="whitespace-nowrap"
+        className={
+          isToolbar
+            ? "h-11 w-full self-end whitespace-nowrap"
+            : "whitespace-nowrap"
+        }
       >
         {resetLabel}
       </Button>

@@ -73,7 +73,8 @@ export function AppShell({
       item.id === "dashboard" ||
       ((item.id === "properties" ||
         item.id === "units" ||
-        item.id === "listings") &&
+        item.id === "listings" ||
+        item.id === "applications") &&
         canManageProperties),
   ).map((item) => ({
     ...item,
