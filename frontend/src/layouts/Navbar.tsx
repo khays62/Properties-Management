@@ -1,5 +1,14 @@
-import type { Ref } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type KeyboardEvent,
+  type Ref,
+} from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 
+import { useAuth } from "../hooks/useAuth";
 import { Button } from "../components/ui/Button";
 import { AppLogo } from "./AppLogo";
 
@@ -22,6 +31,73 @@ export function Navbar({
   onToggleSidebar,
   sidebarCollapsed,
 }: NavbarProps) {
+  const { logout } = useAuth();
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const profileAreaRef = useRef<HTMLDivElement>(null);
+  const profileButtonRef = useRef<HTMLButtonElement>(null);
+  const profileMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!profileMenuOpen) return;
+
+    profileMenuRef.current
+      ?.querySelector<HTMLElement>('[role="menuitem"]:not([aria-disabled="true"])')
+      ?.focus();
+
+    function handlePointerDown(event: PointerEvent) {
+      if (
+        event.target instanceof Node &&
+        !profileAreaRef.current?.contains(event.target)
+      ) {
+        setProfileMenuOpen(false);
+      }
+    }
+
+    function handleKeyDown(event: globalThis.KeyboardEvent) {
+      if (event.key === "Escape") {
+        setProfileMenuOpen(false);
+        profileButtonRef.current?.focus();
+      }
+    }
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [profileMenuOpen]);
+
+  function handleProfileMenuKeyDown(event: KeyboardEvent<HTMLDivElement>) {
+    if (event.key !== "ArrowDown" && event.key !== "ArrowUp") return;
+    event.preventDefault();
+
+    const items = Array.from(
+      event.currentTarget.querySelectorAll<HTMLElement>(
+        '[role="menuitem"]:not([aria-disabled="true"])',
+      ),
+    );
+    const currentIndex = items.indexOf(document.activeElement as HTMLElement);
+    const direction = event.key === "ArrowDown" ? 1 : -1;
+    const nextIndex =
+      currentIndex === -1
+        ? 0
+        : (currentIndex + direction + items.length) % items.length;
+    items[nextIndex]?.focus();
+  }
+
+  async function handleLogout() {
+    setProfileMenuOpen(false);
+    logout();
+    queryClient.clear();
+    await queryClient.cancelQueries();
+    queryClient.clear();
+    navigate("/login", { replace: true });
+  }
+
   return (
     <header
       className={[
@@ -111,20 +187,68 @@ export function Navbar({
             />
           </svg>
         </div>
-        <div
-          role="img"
-          aria-label="Profile placeholder"
-          className="flex items-center gap-2"
-        >
-          <span
-            aria-hidden="true"
-            className="grid h-9 w-9 place-items-center rounded-full bg-background text-xs font-semibold text-text-secondary"
+        <div ref={profileAreaRef} className="relative">
+          <button
+            ref={profileButtonRef}
+            type="button"
+            aria-label="Open profile menu"
+            aria-haspopup="menu"
+            aria-expanded={profileMenuOpen}
+            aria-controls="navbar-profile-menu"
+            onClick={() => setProfileMenuOpen((open) => !open)}
+            className="flex min-h-10 items-center gap-2 rounded-md px-2 text-left hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-omni-blue"
           >
-            OP
-          </span>
-          <span className="hidden text-sm font-medium text-text-primary sm:block">
-            Profile
-          </span>
+            <span
+              aria-hidden="true"
+              className="grid h-9 w-9 place-items-center rounded-full bg-background text-xs font-semibold text-text-secondary"
+            >
+              OP
+            </span>
+            <span className="hidden text-sm font-medium text-text-primary sm:block">
+              Profile
+            </span>
+            <svg
+              aria-hidden="true"
+              className="hidden h-4 w-4 text-text-secondary sm:block"
+              fill="none"
+              viewBox="0 0 20 20"
+            >
+              <path
+                d="m5 7.5 5 5 5-5"
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="1.5"
+              />
+            </svg>
+          </button>
+          {profileMenuOpen && (
+            <div
+              ref={profileMenuRef}
+              id="navbar-profile-menu"
+              role="menu"
+              aria-label="Profile"
+              onKeyDown={handleProfileMenuKeyDown}
+              className="absolute right-0 top-full z-[var(--z-index-dropdown)] mt-2 w-48 rounded-lg border border-slate-200 bg-card p-1.5 shadow-lg"
+            >
+              <div
+                role="menuitem"
+                aria-disabled="true"
+                tabIndex={-1}
+                className="rounded-md px-3 py-2 text-sm text-text-secondary"
+              >
+                Profile
+              </div>
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => void handleLogout()}
+                className="w-full rounded-md px-3 py-2 text-left text-sm font-medium text-danger hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-omni-blue"
+              >
+                Logout
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </header>

@@ -423,3 +423,25 @@ class Receipt(BaseModel):
 
     def __str__(self) -> str:
         return self.receipt_number
+
+
+class Invoice(BaseModel):
+    rent_charge = models.OneToOneField(
+        RentCharge,
+        on_delete=models.PROTECT,
+        related_name="invoice",
+    )
+    invoice_number = models.CharField(max_length=40, unique=True)
+    issued_date = models.DateField(default=timezone.localdate)
+
+    class Meta:
+        ordering = ["-issued_date", "invoice_number"]
+        indexes = [
+            models.Index(
+                fields=["issued_date"],
+                name="invoice_issued_date_idx",
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return self.invoice_number
