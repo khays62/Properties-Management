@@ -5,7 +5,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from apps.audit.models import AuditLog
-from apps.accounts.models import User
+from apps.accounts.models import PropertyAssignment, User
 from common.constants import AuditAction, PropertyStatus, UnitStatus, UserRole
 
 from ..models import Property, Unit
@@ -68,6 +68,84 @@ class PropertyApiTests(APITestCase):
         created_property = Property.objects.get(code="GARDEN-01")
         self.assertEqual(created_property.owner, self.owner)
         self.assertEqual(created_property.status, PropertyStatus.ACTIVE)
+
+    def test_owner_assigns_property_manager_idempotently(self):
+        manager = User.objects.create_user(
+            email="manager@example.com",
+            password="test-password",
+            role=UserRole.PROPERTY_MANAGER,
+        )
+        url = reverse(
+            "properties:property-assign-manager",
+            kwargs={"pk": self.property.pk},
+        )
+
+        response = self.client.post(
+            url,
+            {"manager_email": manager.email},
+            format="json",
+        )
+        repeated_response = self.client.post(
+            url,
+            {"manager_email": manager.email},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK, response.data)
+        self.assertEqual(repeated_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(str(response.data["manager"]), str(manager.pk))
+        self.assertTrue(
+            PropertyAssignment.objects.filter(
+                property_id=self.property.pk,
+                manager=manager,
+                is_active=True,
+            ).exists()
+        )
+        self.assertEqual(
+            PropertyAssignment.objects.filter(
+                property_id=self.property.pk,
+                manager=manager,
+            ).count(),
+            1,
+        )
+
+    def test_only_property_owner_can_assign_manager(self):
+        manager = User.objects.create_user(
+            email="manager@example.com",
+            password="test-password",
+            role=UserRole.PROPERTY_MANAGER,
+        )
+        PropertyAssignment.objects.create(
+            property_id=self.property.pk,
+            manager=manager,
+        )
+        self.client.force_authenticate(manager)
+
+        response = self.client.post(
+            reverse(
+                "properties:property-assign-manager",
+                kwargs={"pk": self.property.pk},
+            ),
+            {"manager_email": manager.email},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_assignment_requires_active_property_manager(self):
+        response = self.client.post(
+            reverse(
+                "properties:property-assign-manager",
+                kwargs={"pk": self.property.pk},
+            ),
+            {"manager_email": "unknown@example.com"},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertFalse(
+            PropertyAssignment.objects.filter(property_id=self.property.pk).exists()
+        )
 
     def test_unit_creation(self):
         response = self.client.post(

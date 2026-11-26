@@ -5,10 +5,12 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { useLocation } from "react-router-dom";
 
 import { ContentContainer, type ContentMaxWidth, type ContentPadding } from "./ContentContainer";
 import { Navbar } from "./Navbar";
-import { Sidebar } from "./Sidebar";
+import { Sidebar, type SidebarItem } from "./Sidebar";
+import { useAuth } from "../hooks/useAuth";
 
 export interface AppShellProps {
   children: ReactNode;
@@ -23,6 +25,8 @@ export function AppShell({
   contentPadding,
   maxContentWidth,
 }: AppShellProps) {
+  const { user } = useAuth();
+  const { pathname } = useLocation();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const desktopToggleRef = useRef<HTMLButtonElement>(null);
@@ -48,6 +52,40 @@ export function AppShell({
   const toggleMobileSidebar = useCallback(() => {
     setMobileSidebarOpen((open) => !open);
   }, []);
+  const navigation: SidebarItem[] = [
+    { id: "dashboard", label: "Dashboard", href: "/dashboard" },
+    ...(
+      user?.role === "OWNER"
+        ? [
+            { id: "properties", label: "Properties", href: "/properties" },
+            { id: "units", label: "Units", href: "/units" },
+            { id: "listings", label: "Listings", href: "/listings" },
+            { id: "applications", label: "Applications", href: "/applications" },
+            { id: "leases", label: "Leases", href: "/leases" },
+            { id: "finance", label: "Finance", href: "/finance" },
+            { id: "maintenance", label: "Maintenance", href: "/maintenance" },
+            { id: "renewals", label: "Renewals", href: "/renewals" },
+          ]
+        : user?.role === "PROPERTY_MANAGER"
+          ? [
+              { id: "properties", label: "Properties", href: "/properties" },
+              { id: "units", label: "Units", href: "/units" },
+              { id: "listings", label: "Listings", href: "/listings" },
+              { id: "applications", label: "Applications", href: "/applications" },
+              { id: "leases", label: "Leases", href: "/leases" },
+              { id: "finance", label: "Finance", href: "/finance" },
+              { id: "maintenance", label: "Maintenance", href: "/maintenance" },
+              { id: "renewals", label: "Renewals", href: "/renewals" },
+            ]
+          : user?.role === "ACCOUNTANT"
+            ? [{ id: "finance", label: "Finance", href: "/finance" }]
+            : [
+                { id: "finance", label: "Finance", href: "/finance" },
+                { id: "maintenance", label: "Maintenance", href: "/maintenance" },
+                { id: "renewals", label: "Renewals", href: "/renewals" },
+              ]
+    ).map((item) => ({ ...item, active: pathname === item.href })),
+  ];
 
   return (
     <div className={["min-h-screen bg-background", className].filter(Boolean).join(" ")}>
@@ -64,6 +102,7 @@ export function AppShell({
           collapsed={sidebarCollapsed}
           mobileOpen={mobileSidebarOpen}
           onClose={closeMobileSidebar}
+          items={navigation}
           returnFocusRef={mobileToggleRef}
         />
         <main

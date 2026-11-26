@@ -424,6 +424,52 @@ class LeaseWorkflowTests(APITestCase):
             RenewalAlertStatus.RESOLVED,
         )
 
+    def test_renewal_generation_endpoint_persists_alerts_idempotently(self):
+        today = timezone.localdate()
+        lease = self.activate_lease(
+            self.create_lease(end_date=today + timedelta(days=90))
+        )
+        url = reverse("leases:renewal-alert-generate")
+
+        response = self.client.post(url, {}, format="json")
+        repeated_response = self.client.post(url, {}, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK, response.data)
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(repeated_response.data, [])
+        self.assertTrue(
+            RenewalAlert.objects.filter(
+                lease=lease,
+                days_before_expiry=90,
+            ).exists()
+        )
+        lease.refresh_from_db()
+        self.assertEqual(lease.status, LeaseStatus.EXPIRING)
+
+    def test_renewal_generation_is_scoped_to_assigned_properties(self):
+        today = timezone.localdate()
+        lease = self.activate_lease(
+            self.create_lease(end_date=today + timedelta(days=60))
+        )
+        manager = User.objects.create_user(
+            email="unassigned-manager@example.com",
+            password="test-password",
+            role=UserRole.PROPERTY_MANAGER,
+        )
+        self.client.force_authenticate(manager)
+
+        response = self.client.post(
+            reverse("leases:renewal-alert-generate"),
+            {},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, [])
+        lease.refresh_from_db()
+        self.assertEqual(lease.status, LeaseStatus.ACTIVE)
+        self.assertFalse(RenewalAlert.objects.filter(lease=lease).exists())
+
     def test_tenant_can_only_read_own_lease(self):
         lease = self.activate_lease(self.create_lease())
         self.client.force_authenticate(lease.tenant.user)

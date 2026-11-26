@@ -4,14 +4,23 @@ from rest_framework.decorators import action
 from rest_framework.request import Request
 from rest_framework.response import Response
 
+from apps.accounts.services.property_assignment_service import (
+    PropertyAssignmentService,
+)
 from apps.audit.services.audit_log_service import AuditContext
 
 from .models import Property, Unit, UnitImage
-from .permissions import CanManageProperty, CanManageUnit
+from .permissions import (
+    CanAssignPropertyManager,
+    CanManageProperty,
+    CanManageUnit,
+)
 from .selectors.property_selector import PropertySelector
 from .selectors.unit_selector import UnitSelector
 from .serializers import (
     PropertyDetailSerializer,
+    AssignPropertyManagerSerializer,
+    PropertyAssignmentSerializer,
     PropertySerializer,
     UnitDetailSerializer,
     UnitImageSerializer,
@@ -61,6 +70,23 @@ class PropertyViewSet(
             audit_context=AuditContext.from_request(request),
         )
         return Response(self.get_serializer(archived_property).data)
+
+    @action(
+        detail=True,
+        methods=["post"],
+        url_path="assign-manager",
+        permission_classes=(CanAssignPropertyManager,),
+    )
+    def assign_manager(self, request: Request, pk: str | None = None) -> Response:
+        property_obj = self.get_object()
+        input_serializer = AssignPropertyManagerSerializer(data=request.data)
+        input_serializer.is_valid(raise_exception=True)
+        assignment = PropertyAssignmentService.assign_manager(
+            property_obj=property_obj,
+            manager_email=input_serializer.validated_data["manager_email"],
+            assigned_by=request.user,
+        )
+        return Response(PropertyAssignmentSerializer(assignment).data)
 
 
 class UnitViewSet(

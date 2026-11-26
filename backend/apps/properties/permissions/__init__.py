@@ -1,4 +1,8 @@
 """Permissions for the properties application."""
-from .property_permissions import CanManageProperty, CanManageUnit
+from .property_permissions import (
+    CanAssignPropertyManager,
+    CanManageProperty,
+    CanManageUnit,
+)
 
-__all__ = ["CanManageProperty", "CanManageUnit"]
+__all__ = ["CanAssignPropertyManager", "CanManageProperty", "CanManageUnit"]

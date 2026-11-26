@@ -17,6 +17,7 @@ from .serializers import (
     DepositPaymentSerializer,
     DepositRefundSerializer,
     DepositSerializer,
+    InvoiceSerializer,
     PaymentDetailSerializer,
     PaymentSerializer,
     ReceiptSerializer,
@@ -25,6 +26,7 @@ from .serializers import (
     RentScheduleSerializer,
 )
 from .services.deposit_service import DepositService
+from .services.invoice_service import InvoiceService
 from .services.payment_service import PaymentService
 from .services.rent_charge_service import RentChargeService
 from .services.rent_schedule_service import RentScheduleService
@@ -137,7 +139,7 @@ class RentChargeViewSet(
             billing_month=self.request.query_params.get("billing_month"),
             billing_year=self.request.query_params.get("billing_year"),
             search=self.request.query_params.get("search"),
-        )
+        ).select_related("invoice")
 
     @action(detail=False, methods=["post"], url_path="generate")
     def generate(self, request: Request) -> Response:
@@ -162,6 +164,11 @@ class RentChargeViewSet(
             changed_by=request.user,
         )
         return Response(self.get_serializer(charge).data)
+
+    @action(detail=True, methods=["post"], url_path="issue-invoice")
+    def issue_invoice(self, request: Request, pk: str | None = None) -> Response:
+        invoice = InvoiceService.issue_invoice(rent_charge=self.get_object())
+        return Response(InvoiceSerializer(invoice).data)
 
 
 class PaymentViewSet(

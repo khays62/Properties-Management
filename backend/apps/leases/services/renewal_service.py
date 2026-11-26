@@ -3,7 +3,9 @@ from datetime import date, timedelta
 from django.db import transaction
 from django.utils import timezone
 
+from apps.accounts.models import User
 from apps.notifications.services.notification_service import NotificationService
+from apps.properties.selectors.property_selector import PropertySelector
 from common.constants import LeaseStatus, NotificationType, RenewalAlertStatus
 from common.exceptions import ConflictErrorResponse
 
@@ -19,6 +21,7 @@ class RenewalService:
         cls,
         *,
         today: date | None = None,
+        user: User | None = None,
     ) -> list[RenewalAlert]:
         today = today or timezone.localdate()
         generated = []
@@ -32,6 +35,10 @@ class RenewalService:
                 )
                 .order_by("end_date", "pk")
             )
+            if user is not None:
+                leases = leases.filter(
+                    unit__property__in=PropertySelector.get_queryset(user)
+                )
             for lease in leases:
                 if lease.status == LeaseStatus.ACTIVE:
                     lease.status = LeaseStatus.EXPIRING

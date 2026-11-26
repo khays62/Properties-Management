@@ -26,6 +26,19 @@ class CanManageProperty(BasePermission):
         return PropertySelector.user_can_manage_property(request.user, obj)
 
 
+class CanAssignPropertyManager(BasePermission):
+    def has_permission(self, request: Request, view: APIView) -> bool:
+        return has_role(request.user, (UserRole.OWNER,))
+
+    def has_object_permission(
+        self,
+        request: Request,
+        view: APIView,
+        obj: Property,
+    ) -> bool:
+        return obj.owner_id == request.user.pk
+
+
 class CanManageUnit(BasePermission):
     def has_permission(self, request: Request, view: APIView) -> bool:
         return has_role(request.user, (UserRole.OWNER, UserRole.PROPERTY_MANAGER))

@@ -1,11 +1,24 @@
 from rest_framework import serializers
 
+from apps.accounts.models import PropertyAssignment
+
 from .models import (
     MAX_UNIT_IMAGE_SIZE_BYTES,
     Property,
     Unit,
     UnitImage,
 )
+
+
+class AssignPropertyManagerSerializer(serializers.Serializer):
+    manager_email = serializers.EmailField()
+
+
+class PropertyAssignmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PropertyAssignment
+        fields = ("id", "property_id", "manager", "assigned_date", "is_active")
+        read_only_fields = fields
 
 
 class PropertySerializer(serializers.ModelSerializer):

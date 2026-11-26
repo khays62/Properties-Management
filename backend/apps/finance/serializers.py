@@ -6,12 +6,20 @@ from apps.leases.models import Lease, Tenant
 
 from .models import (
     Deposit,
+    Invoice,
     Payment,
     PaymentAllocation,
     Receipt,
     RentCharge,
     RentSchedule,
 )
+
+
+class InvoiceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Invoice
+        fields = ("id", "rent_charge", "invoice_number", "issued_date")
+        read_only_fields = fields
 
 
 class DepositSerializer(serializers.ModelSerializer):
@@ -93,6 +101,11 @@ class RentScheduleSerializer(serializers.ModelSerializer):
 
 class RentChargeSerializer(serializers.ModelSerializer):
     tenant = serializers.UUIDField(source="lease.tenant_id", read_only=True)
+    invoice_number = serializers.CharField(
+        source="invoice.invoice_number",
+        read_only=True,
+        allow_null=True,
+    )
 
     class Meta:
         model = RentCharge
@@ -100,6 +113,7 @@ class RentChargeSerializer(serializers.ModelSerializer):
             "id",
             "lease",
             "tenant",
+            "invoice_number",
             "billing_month",
             "billing_year",
             "amount",

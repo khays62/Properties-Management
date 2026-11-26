@@ -159,6 +159,13 @@ class RenewalAlertViewSet(
             property_id=self.request.query_params.get("property"),
         )
 
+    @action(detail=False, methods=["post"], url_path="generate")
+    def generate(self, request: Request) -> Response:
+        alerts = RenewalService.generate_renewal_alerts(user=request.user)
+        return Response(
+            self.get_serializer(alerts, many=True).data,
+        )
+
     @action(detail=True, methods=["post"], url_path="mark-read")
     def mark_read(self, request: Request, pk: str | None = None) -> Response:
         alert = RenewalService.mark_alert_read(self.get_object())

@@ -274,6 +274,44 @@ class FinanceApiTests(APITestCase):
         self.assertEqual(charge.due_date.day, self.schedule.due_day)
         self.assertEqual(charge.status, RentChargeStatus.PENDING)
 
+    def test_invoice_issue_endpoint_persists_idempotent_invoice(self):
+        from ..models import Invoice
+
+        charge = self.create_charge()
+        url = reverse(
+            "finance:rent-charge-issue-invoice",
+            kwargs={"pk": charge.pk},
+        )
+
+        response = self.client.post(url, {}, format="json")
+        repeated_response = self.client.post(url, {}, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK, response.data)
+        self.assertEqual(repeated_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["id"], repeated_response.data["id"])
+        invoice = Invoice.objects.get(rent_charge=charge)
+        self.assertEqual(invoice.invoice_number, response.data["invoice_number"])
+        charge_response = self.client.get(
+            reverse("finance:rent-charge-detail", kwargs={"pk": charge.pk})
+        )
+        self.assertEqual(charge_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(charge_response.data["invoice_number"], invoice.invoice_number)
+
+    def test_invoice_issue_is_denied_to_tenant(self):
+        charge = self.create_charge()
+        self.client.force_authenticate(self.tenant.user)
+
+        response = self.client.post(
+            reverse(
+                "finance:rent-charge-issue-invoice",
+                kwargs={"pk": charge.pk},
+            ),
+            {},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
     def test_duplicate_monthly_charge_generation_is_idempotent(self):
         month, year = self.current_billing_period()
         first = self.create_charge(month, year)
