@@ -43,6 +43,10 @@ import {
   ReceiptListPage,
 } from "./features/finance/pages";
 import {
+  MaintenanceDetailsPage,
+  MaintenanceListPage,
+} from "./features/maintenance/pages";
+import {
   ApplicationsPage,
   FinancePage,
   LeasesPage,
@@ -219,6 +223,22 @@ export default function App() {
               element={
                 <WorkflowRoute allowedRoles={LEASE_ROLES}>
                   <LeaseDetailsPage />
+                </WorkflowRoute>
+              }
+            />
+            <Route
+              path="/maintenance"
+              element={
+                <WorkflowRoute allowedRoles={MAINTENANCE_ROLES}>
+                  <MaintenanceListPage />
+                </WorkflowRoute>
+              }
+            />
+            <Route
+              path="/maintenance/:ticketId"
+              element={
+                <WorkflowRoute allowedRoles={MAINTENANCE_ROLES}>
+                  <MaintenanceDetailsPage />
                 </WorkflowRoute>
               }
             />

@@ -107,6 +107,22 @@ export const DEFAULT_SIDEBAR_ITEMS: readonly SidebarItem[] = [
     ),
   },
   {
+    id: "maintenance",
+    label: "Maintenance",
+    href: "/maintenance",
+    icon: (
+      <svg fill="none" viewBox="0 0 24 24">
+        <path
+          d="M14.2 6.1a4.2 4.2 0 0 0-5.7 5.7L4 16.3a2.1 2.1 0 1 0 3 3l4.5-4.5a4.2 4.2 0 0 0 5.7-5.7l-2.7 2.7-3-3 2.7-2.7Z"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="1.7"
+        />
+      </svg>
+    ),
+  },
+  {
     id: "finance",
     label: "Finance",
     href: "/finance/charges",

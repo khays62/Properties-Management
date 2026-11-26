@@ -68,6 +68,7 @@ export function AppShell({
   }, []);
   const canManageProperties =
     user?.role === "OWNER" || user?.role === "PROPERTY_MANAGER";
+  const canViewMaintenance = canManageProperties || user?.role === "TENANT";
   const canViewLeases = canManageProperties || user?.role === "TENANT";
   const canViewFinance = [
     "OWNER",
@@ -79,6 +80,7 @@ export function AppShell({
     (item) =>
       item.id === "dashboard" ||
       (item.id === "leases" && canViewLeases) ||
+      (item.id === "maintenance" && canViewMaintenance) ||
       (item.id === "finance" && canViewFinance) ||
       ((item.id === "properties" ||
         item.id === "units" ||
