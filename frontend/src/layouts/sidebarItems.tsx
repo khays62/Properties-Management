@@ -42,6 +42,21 @@ export const DEFAULT_SIDEBAR_ITEMS: readonly SidebarItem[] = [
     ),
   },
   {
+    id: "units",
+    label: "Units",
+    href: "/units",
+    icon: (
+      <svg fill="none" viewBox="0 0 24 24">
+        <path
+          d="M4 20V4h16v16H4Zm0-8h16M12 4v16"
+          stroke="currentColor"
+          strokeLinejoin="round"
+          strokeWidth="1.7"
+        />
+      </svg>
+    ),
+  },
+  {
     id: "listings",
     label: "Listings",
     href: "/listings",

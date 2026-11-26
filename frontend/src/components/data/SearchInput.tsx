@@ -78,71 +78,73 @@ export function SearchInput({
   }
 
   return (
-    <div className={["relative w-full", className].filter(Boolean).join(" ")}>
-      <label className="sr-only" htmlFor={inputId}>
+    <div className={["op-field w-full", className].filter(Boolean).join(" ")}>
+      <label className="op-field__label" htmlFor={inputId}>
         {label}
       </label>
-      <Input
-        {...inputProps}
-        ref={inputRef}
-        id={inputId}
-        type="search"
-        value={value}
-        disabled={disabled}
-        onChange={handleChange}
-        className={[
-          "pl-10",
-          value ? "pr-10" : "pr-3",
-          inputClassName,
-        ]
-          .filter(Boolean)
-          .join(" ")}
-      />
-      <svg
-        aria-hidden="true"
-        className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-secondary"
-        fill="none"
-        viewBox="0 0 20 20"
-      >
-        <circle
-          cx="8.75"
-          cy="8.75"
-          r="5.75"
-          stroke="currentColor"
-          strokeWidth="1.5"
-        />
-        <path
-          d="m13 13 4 4"
-          stroke="currentColor"
-          strokeLinecap="round"
-          strokeWidth="1.5"
-        />
-      </svg>
-      {value && (
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          aria-label="Clear search"
+      <div className="relative">
+        <Input
+          {...inputProps}
+          ref={inputRef}
+          id={inputId}
+          type="search"
+          value={value}
           disabled={disabled}
-          onClick={clearSearch}
-          className="absolute right-1 top-1/2 z-10 h-8 min-h-0 w-8 -translate-y-1/2 p-0 text-text-secondary"
+          onChange={handleChange}
+          className={[
+            "pl-10",
+            value ? "pr-10" : "pr-3",
+            inputClassName,
+          ]
+            .filter(Boolean)
+            .join(" ")}
+        />
+        <svg
+          aria-hidden="true"
+          className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-secondary"
+          fill="none"
+          viewBox="0 0 20 20"
         >
-          <svg
-            aria-hidden="true"
-            className="h-4 w-4"
-            fill="none"
-            viewBox="0 0 20 20"
+          <circle
+            cx="8.75"
+            cy="8.75"
+            r="5.75"
+            stroke="currentColor"
+            strokeWidth="1.5"
+          />
+          <path
+            d="m13 13 4 4"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeWidth="1.5"
+          />
+        </svg>
+        {value && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            aria-label="Clear search"
+            disabled={disabled}
+            onClick={clearSearch}
+            className="absolute right-1 top-1/2 z-10 h-8 min-h-0 w-8 -translate-y-1/2 p-0 text-text-secondary"
           >
-            <path
-              d="m5 5 10 10M15 5 5 15"
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeWidth="1.5"
-            />
-          </svg>
-        </Button>
-      )}
+            <svg
+              aria-hidden="true"
+              className="h-4 w-4"
+              fill="none"
+              viewBox="0 0 20 20"
+            >
+              <path
+                d="m5 5 10 10M15 5 5 15"
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeWidth="1.5"
+              />
+            </svg>
+          </Button>
+        )}
+      </div>
     </div>
   );
 }

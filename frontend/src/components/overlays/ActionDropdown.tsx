@@ -191,10 +191,15 @@ export function ActionDropdown({
                 type="button"
                 role="menuitem"
                 tabIndex={-1}
-                variant={item.variant ?? "ghost"}
+                variant={item.disabled ? "ghost" : item.variant ?? "ghost"}
                 size="sm"
                 disabled={item.disabled}
                 title={item.disabledReason}
+                aria-label={
+                  item.disabledReason
+                    ? `${item.label}. ${item.disabledReason}`
+                    : undefined
+                }
                 onClick={() => {
                   item.onSelect();
                   closeMenu();
@@ -202,14 +207,7 @@ export function ActionDropdown({
                 className="w-full justify-start gap-2 text-left"
               >
                 {item.icon}
-                <span className="flex min-w-0 flex-col items-start">
-                  <span>{item.label}</span>
-                  {item.disabledReason && (
-                    <span className="whitespace-normal text-xs font-normal text-text-secondary">
-                      {item.disabledReason}
-                    </span>
-                  )}
-                </span>
+                <span className="truncate">{item.label}</span>
               </Button>
             ))}
           </div>,

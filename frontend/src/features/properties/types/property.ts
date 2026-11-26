@@ -22,8 +22,10 @@ export const propertySchema = z
 export const propertyUnitSchema = z
   .object({
     id: z.string().uuid(),
+    property: z.string().uuid(),
     unit_number: z.string(),
     status: z.string(),
+    is_active: z.boolean(),
     bedrooms: z.number(),
     rent_amount: z.union([z.string(), z.number()]),
   })

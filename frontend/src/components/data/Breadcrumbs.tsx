@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 export interface BreadcrumbItem {
   label: string;
   href?: string;
@@ -49,12 +51,12 @@ export function Breadcrumbs({
                   {item.label}
                 </span>
               ) : item.href ? (
-                <a
-                  href={item.href}
+                <Link
+                  to={item.href}
                   className="rounded-sm hover:text-text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-omni-blue"
                 >
                   {item.label}
-                </a>
+                </Link>
               ) : item.onClick ? (
                 <button
                   type="button"

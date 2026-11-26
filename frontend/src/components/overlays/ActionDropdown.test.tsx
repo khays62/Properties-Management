@@ -41,7 +41,7 @@ describe("ActionDropdown", () => {
     expect(screen.queryByRole("menu")).not.toBeInTheDocument();
   });
 
-  it("shows why an unavailable action is disabled", async () => {
+  it("shows a tooltip explanation without expanding the disabled menu item", async () => {
     const user = userEvent.setup();
 
     render(
@@ -60,9 +60,16 @@ describe("ActionDropdown", () => {
 
     await user.click(screen.getByRole("button", { name: "Actions" }));
 
+    const archiveItem = screen.getByRole("menuitem", {
+      name: "Archive property. This property still has units.",
+    });
+    expect(archiveItem).toBeDisabled();
+    expect(archiveItem).toHaveAttribute(
+      "title",
+      "This property still has units.",
+    );
     expect(
-      screen.getByRole("menuitem", { name: /Archive property/ }),
-    ).toBeDisabled();
-    expect(screen.getByText("This property still has units.")).toBeVisible();
+      screen.queryByText("This property still has units."),
+    ).not.toBeInTheDocument();
   });
 });

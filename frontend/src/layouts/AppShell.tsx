@@ -71,7 +71,8 @@ export function AppShell({
   const navigation = DEFAULT_SIDEBAR_ITEMS.filter(
     (item) =>
       item.id === "dashboard" ||
-      (item.id === "properties" && canManageProperties),
+      ((item.id === "properties" || item.id === "units") &&
+        canManageProperties),
   ).map((item) => ({
     ...item,
     active: pathname === item.href || pathname.startsWith(`${item.href}/`),

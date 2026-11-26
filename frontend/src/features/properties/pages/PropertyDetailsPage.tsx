@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 
 import {
   Breadcrumbs,
@@ -9,10 +9,12 @@ import {
 } from "../../../components/data";
 import { ErrorState } from "../../../components/feedback/ErrorState";
 import { LoadingState } from "../../../components/feedback/LoadingState";
+import { Button } from "../../../components/ui/Button";
 import { Card } from "../../../components/ui/Card";
 import { StatusBadge } from "../../../components/ui/StatusBadge";
 import { useAuth } from "../../../hooks/useAuth";
 import { toastService } from "../../../services/toastService";
+import { getListReturnPath } from "../../../utils/navigation";
 import { getPropertyErrorMessage } from "../api/properties.api";
 import { PropertyActionDialogs } from "../components/PropertyActionDialogs";
 import { PropertyActionsMenu } from "../components/PropertyActionsMenu";
@@ -24,7 +26,14 @@ const unitColumns: DataTableColumn<PropertyUnit>[] = [
     id: "unit_number",
     header: "Unit",
     sortValue: (unit) => unit.unit_number,
-    render: (unit) => unit.unit_number,
+    render: (unit) => (
+      <Link
+        to={`/units/${unit.id}`}
+        className="font-medium text-omni-blue hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-omni-blue"
+      >
+        {unit.unit_number}
+      </Link>
+    ),
   },
   {
     id: "bedrooms",
@@ -42,12 +51,15 @@ const unitColumns: DataTableColumn<PropertyUnit>[] = [
     id: "status",
     header: "Status",
     sortValue: (unit) => unit.status,
-    render: (unit) => <StatusBadge status={unit.status} />,
+    render: (unit) => (
+      <StatusBadge status={unit.is_active ? unit.status : "ARCHIVED"} />
+    ),
   },
 ];
 
 export function PropertyDetailsPage() {
   const { propertyId = "" } = useParams<{ propertyId: string }>();
+  const location = useLocation();
   const navigate = useNavigate();
   const { user } = useAuth();
   const query = useProperty(propertyId);
@@ -60,6 +72,11 @@ export function PropertyDetailsPage() {
     null,
   );
   const isOwner = user?.role === "OWNER";
+  const propertiesListPath = getListReturnPath(
+    location.state,
+    "/properties",
+    "/properties",
+  );
 
   if (query.isLoading) {
     return (
@@ -75,7 +92,7 @@ export function PropertyDetailsPage() {
       <div className="space-y-4 py-6">
         <Breadcrumbs
           items={[
-            { label: "Properties", href: "/properties" },
+            { label: "Properties", href: propertiesListPath },
             { label: "Property details", current: true },
           ]}
         />
@@ -96,7 +113,7 @@ export function PropertyDetailsPage() {
     <div className="space-y-6 py-6">
       <Breadcrumbs
         items={[
-          { label: "Properties", href: "/properties" },
+          { label: "Properties", href: propertiesListPath },
           { label: property.name, current: true },
         ]}
       />
@@ -151,6 +168,13 @@ export function PropertyDetailsPage() {
               this property.
             </p>
           </div>
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={() => navigate(`/units?property=${property.id}`)}
+          >
+            Manage units
+          </Button>
         </div>
         <DataTable
           ariaLabel="Units at this property"
