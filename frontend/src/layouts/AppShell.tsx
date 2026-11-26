@@ -54,38 +54,13 @@ export function AppShell({
   }, []);
   const navigation: SidebarItem[] = [
     { id: "dashboard", label: "Dashboard", href: "/dashboard" },
-    ...(
-      user?.role === "OWNER"
-        ? [
-            { id: "properties", label: "Properties", href: "/properties" },
-            { id: "units", label: "Units", href: "/units" },
-            { id: "listings", label: "Listings", href: "/listings" },
-            { id: "applications", label: "Applications", href: "/applications" },
-            { id: "leases", label: "Leases", href: "/leases" },
-            { id: "finance", label: "Finance", href: "/finance" },
-            { id: "maintenance", label: "Maintenance", href: "/maintenance" },
-            { id: "renewals", label: "Renewals", href: "/renewals" },
-          ]
-        : user?.role === "PROPERTY_MANAGER"
-          ? [
-              { id: "properties", label: "Properties", href: "/properties" },
-              { id: "units", label: "Units", href: "/units" },
-              { id: "listings", label: "Listings", href: "/listings" },
-              { id: "applications", label: "Applications", href: "/applications" },
-              { id: "leases", label: "Leases", href: "/leases" },
-              { id: "finance", label: "Finance", href: "/finance" },
-              { id: "maintenance", label: "Maintenance", href: "/maintenance" },
-              { id: "renewals", label: "Renewals", href: "/renewals" },
-            ]
-          : user?.role === "ACCOUNTANT"
-            ? [{ id: "finance", label: "Finance", href: "/finance" }]
-            : [
-                { id: "finance", label: "Finance", href: "/finance" },
-                { id: "maintenance", label: "Maintenance", href: "/maintenance" },
-                { id: "renewals", label: "Renewals", href: "/renewals" },
-              ]
-    ).map((item) => ({ ...item, active: pathname === item.href })),
-  ];
+    ...(user?.role === "OWNER" || user?.role === "PROPERTY_MANAGER"
+      ? [{ id: "properties", label: "Properties", href: "/properties" }]
+      : []),
+  ].map((item) => ({
+    ...item,
+    active: pathname === item.href || pathname.startsWith(`${item.href}/`),
+  }));
 
   return (
     <div className={["min-h-screen bg-background", className].filter(Boolean).join(" ")}>

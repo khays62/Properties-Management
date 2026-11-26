@@ -52,6 +52,8 @@ test("owner, manager, applicant, finance, maintenance, and renewal workflow", as
   expect(managerPassword, "E2E_MANAGER_PASSWORD must be provided by the test database").toBeTruthy();
 
   const runId = Date.now().toString();
+  const featurePropertyName = `Property Feature ${runId}`;
+  const featurePropertyCode = `UI-${runId.slice(-12)}`;
   const propertyName = `Browser Home ${runId}`;
   const propertyCode = `E2E-${runId.slice(-12)}`;
   const unitNumber = `B-${runId.slice(-8)}`;
@@ -67,7 +69,93 @@ test("owner, manager, applicant, finance, maintenance, and renewal workflow", as
 
   try {
     await signIn(ownerPage, ownerEmail, ownerPassword);
+
     await ownerPage.goto("/properties");
+    await ownerPage.getByRole("button", { name: "Add property" }).click();
+    const createPropertyDialog = ownerPage.getByRole("dialog", {
+      name: "Create property",
+    });
+    await createPropertyDialog
+      .getByLabel("Property name")
+      .fill(featurePropertyName);
+    await createPropertyDialog
+      .getByLabel("Property code")
+      .fill(featurePropertyCode);
+    await createPropertyDialog
+      .getByLabel("Street address")
+      .fill("22 Feature Road");
+    await createPropertyDialog.getByLabel("City").fill("Mogadishu");
+    await createPropertyDialog.getByLabel("Country").fill("Somalia");
+    await createPropertyDialog
+      .getByLabel("Description")
+      .fill("Created through the property feature.");
+    await createPropertyDialog
+      .getByRole("button", { name: "Create property" })
+      .click();
+    await expect(ownerPage.getByRole("status")).toContainText(
+      "Property created.",
+    );
+
+    const featurePropertyRow = ownerPage
+      .getByRole("row")
+      .filter({ hasText: featurePropertyName });
+    await ownerPage.getByLabel("City").fill("Mogadishu");
+    await ownerPage.getByLabel("Status", { exact: true }).selectOption("ACTIVE");
+    await expect(featurePropertyRow).toBeVisible();
+    await ownerPage.getByRole("button", { name: "Reset filters" }).click();
+    await featurePropertyRow.getByRole("link").click();
+    await expect(
+      ownerPage.getByRole("heading", { name: featurePropertyName }),
+    ).toBeVisible();
+
+    await ownerPage
+      .getByRole("button", { name: `Actions for ${featurePropertyName}` })
+      .click();
+    await ownerPage.getByRole("button", { name: "Edit property" }).click();
+    const editPropertyDialog = ownerPage.getByRole("dialog", {
+      name: "Edit property",
+    });
+    await editPropertyDialog
+      .getByLabel("Description")
+      .fill("Updated through the property feature.");
+    await editPropertyDialog
+      .getByRole("button", { name: "Save changes" })
+      .click();
+    await expect(ownerPage.getByRole("status")).toContainText(
+      "Property updated.",
+    );
+
+    await ownerPage
+      .getByRole("button", { name: `Actions for ${featurePropertyName}` })
+      .click();
+    await ownerPage.getByRole("button", { name: "Assign manager" }).click();
+    const assignmentDialog = ownerPage.getByRole("dialog", {
+      name: "Assign property manager",
+    });
+    await assignmentDialog
+      .getByLabel("Property manager email")
+      .fill(managerEmail);
+    await assignmentDialog
+      .getByRole("button", { name: "Assign manager" })
+      .click();
+    await expect(ownerPage.getByRole("status")).toContainText(
+      "Property manager assigned.",
+    );
+
+    await ownerPage
+      .getByRole("button", { name: `Actions for ${featurePropertyName}` })
+      .click();
+    await ownerPage.getByRole("button", { name: "Archive property" }).click();
+    const archiveDialog = ownerPage.getByRole("dialog", {
+      name: "Archive property?",
+    });
+    await archiveDialog
+      .getByRole("button", { name: "Archive property" })
+      .click();
+    await expect(featurePropertyRow).toContainText("Archived");
+    console.log("[e2e] property feature create, filter, edit, assign, archive");
+
+    await ownerPage.goto("/internal/workflows/properties");
     const propertyForm = ownerPage.locator("form").nth(0);
     await propertyForm.getByLabel("Property name").fill(propertyName);
     await propertyForm.getByLabel("Property code").fill(propertyCode);
@@ -85,7 +173,7 @@ test("owner, manager, applicant, finance, maintenance, and renewal workflow", as
     console.log("[e2e] owner property created and manager assigned");
 
     await signIn(managerPage, managerEmail, managerPassword);
-    await managerPage.goto("/units");
+    await managerPage.goto("/internal/workflows/units");
     const unitForm = managerPage.locator("form").nth(0);
     await unitForm
       .getByLabel("Property", { exact: true })
@@ -100,7 +188,7 @@ test("owner, manager, applicant, finance, maintenance, and renewal workflow", as
     await saveForm(managerPage, 0);
     console.log("[e2e] manager created the unit");
 
-    await managerPage.goto("/listings");
+    await managerPage.goto("/internal/workflows/listings");
     const listingForm = managerPage.locator("form").nth(0);
     await listingForm.getByLabel("Unit").selectOption({ label: unitNumber });
     await listingForm.getByLabel("Listing title").fill(listingTitle);
@@ -114,7 +202,7 @@ test("owner, manager, applicant, finance, maintenance, and renewal workflow", as
     await expect(listingRow).toContainText("Published");
     console.log("[e2e] listing published");
 
-    await applicantPage.goto("/available-listings");
+    await applicantPage.goto("/internal/workflows/available-listings");
     await expect(applicantPage.getByText(listingTitle)).toBeVisible();
     await applicantPage.getByLabel("First name").fill("Workflow");
     await applicantPage.getByLabel("Last name").fill("Applicant");
@@ -128,7 +216,7 @@ test("owner, manager, applicant, finance, maintenance, and renewal workflow", as
     await expect(applicantPage.getByRole("status")).toContainText("Saved successfully.");
     console.log("[e2e] applicant submitted application");
 
-    await managerPage.goto("/applications");
+    await managerPage.goto("/internal/workflows/applications");
     let applicationRow = managerPage.getByRole("row").filter({ hasText: applicantEmail });
     await expect(applicationRow).toBeVisible();
     await applicationRow.getByRole("button", { name: "Review" }).click();
@@ -143,7 +231,7 @@ test("owner, manager, applicant, finance, maintenance, and renewal workflow", as
     await expect(applicationRow).toContainText("Approved");
     console.log("[e2e] application screened and approved");
 
-    await managerPage.goto("/leases");
+    await managerPage.goto("/internal/workflows/leases");
     const leaseForm = managerPage.locator("form").nth(0);
     await leaseForm.getByLabel("Approved application").selectOption({ index: 1 });
     await leaseForm.getByLabel("Start date").fill(firstOfCurrentMonth());
@@ -160,7 +248,7 @@ test("owner, manager, applicant, finance, maintenance, and renewal workflow", as
     await expect(leaseRow).toContainText("Active");
     console.log("[e2e] lease activated");
 
-    await managerPage.goto("/finance");
+    await managerPage.goto("/internal/workflows/finance");
     const financeForms = managerPage.locator("form");
     await financeForms.nth(0).getByLabel("Lease").selectOption({ index: 1 });
     await financeForms.nth(0).getByLabel("Due day of month").fill("1");
@@ -212,7 +300,7 @@ test("owner, manager, applicant, finance, maintenance, and renewal workflow", as
     await expect(managerPage.getByText(/RCP-/)).toBeVisible();
     console.log("[e2e] finance records and receipt created");
 
-    await managerPage.goto("/maintenance");
+    await managerPage.goto("/internal/workflows/maintenance");
     const maintenanceForm = managerPage.locator("form").nth(0);
     await maintenanceForm.getByLabel("Unit").selectOption({ label: unitNumber });
     await maintenanceForm.getByLabel("Tenant profile").selectOption({ index: 1 });
@@ -228,7 +316,7 @@ test("owner, manager, applicant, finance, maintenance, and renewal workflow", as
     await expect(ticketRow).toContainText("Resolved");
     console.log("[e2e] maintenance ticket resolved");
 
-    await managerPage.goto("/renewals");
+    await managerPage.goto("/internal/workflows/renewals");
     await managerPage.getByRole("button", { name: "Generate renewal alerts" }).click();
     await expect(managerPage.getByRole("table").getByText("Unread")).toBeVisible();
     const renewalForm = managerPage.locator("form").nth(0);
@@ -237,7 +325,7 @@ test("owner, manager, applicant, finance, maintenance, and renewal workflow", as
     await saveForm(managerPage, 0);
     console.log("[e2e] renewal alert generated and lease renewed");
 
-    await managerPage.goto("/finance");
+    await managerPage.goto("/internal/workflows/finance");
     await expect(
       managerPage.getByRole("table").filter({ hasText: `PAY-${runId}` }),
     ).toContainText("Completed");

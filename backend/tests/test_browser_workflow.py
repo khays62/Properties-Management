@@ -139,8 +139,14 @@ class BrowserWorkflowE2ETests(LiveServerTestCase):
                 frontend_process.wait(timeout=10)
 
         property_obj = Property.objects.get(code__startswith="E2E-")
+        feature_property = Property.objects.get(code__startswith="UI-")
         assignment = PropertyAssignment.objects.get(
             property_id=property_obj.pk,
+            manager=self.manager,
+            is_active=True,
+        )
+        feature_assignment = PropertyAssignment.objects.get(
+            property_id=feature_property.pk,
             manager=self.manager,
             is_active=True,
         )
@@ -165,6 +171,12 @@ class BrowserWorkflowE2ETests(LiveServerTestCase):
         ticket = MaintenanceTicket.objects.get(unit=unit)
 
         self.assertEqual(assignment.manager_id, self.manager.pk)
+        self.assertEqual(feature_assignment.manager_id, self.manager.pk)
+        self.assertEqual(feature_property.status, "ARCHIVED")
+        self.assertEqual(
+            feature_property.description,
+            "Updated through the property feature.",
+        )
         self.assertEqual(unit.status, UnitStatus.OCCUPIED)
         self.assertEqual(listing.status, ListingStatus.CLOSED)
         self.assertEqual(application.status, ApplicationStatus.APPROVED)

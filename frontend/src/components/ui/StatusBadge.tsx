@@ -63,6 +63,7 @@ function getStatusVariant(status: string): BadgeVariant {
 function formatStatus(status: string): string {
   return status
     .trim()
+    .toLowerCase()
     .replace(/[_-]+/g, " ")
     .replace(/\s+/g, " ")
     .replace(/\b\w/g, (letter) => letter.toUpperCase());

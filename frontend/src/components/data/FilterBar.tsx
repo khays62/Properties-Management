@@ -20,6 +20,10 @@ export type FilterDefinition =
       placeholder?: string;
     })
   | (FilterDefinitionBase & {
+      type: "text";
+      placeholder?: string;
+    })
+  | (FilterDefinitionBase & {
       type: "date";
       min?: string;
       max?: string;
@@ -29,6 +33,7 @@ export interface FilterBarProps {
   filters: readonly FilterDefinition[];
   onFilterChange: (filterId: string, value: string) => void;
   onReset: () => void;
+  resetDisabled?: boolean;
   resetLabel?: string;
   className?: string;
 }
@@ -38,6 +43,7 @@ export function FilterBar({
   filters,
   onFilterChange,
   onReset,
+  resetDisabled,
   resetLabel = "Reset filters",
 }: FilterBarProps) {
   const hasActiveFilters = filters.some((filter) => filter.value !== "");
@@ -52,7 +58,18 @@ export function FilterBar({
     >
       {filters.map((filter) => (
         <div key={filter.id} className="min-w-[12rem] flex-1">
-          {filter.type === "date" ? (
+          {filter.type === "text" ? (
+            <Input
+              id={`filter-${filter.id}`}
+              label={filter.label}
+              placeholder={filter.placeholder}
+              value={filter.value}
+              onChange={(event) =>
+                onFilterChange(filter.id, event.currentTarget.value)
+              }
+              className="w-full"
+            />
+          ) : filter.type === "date" ? (
             <Input
               id={`filter-${filter.id}`}
               type="date"
@@ -91,7 +108,7 @@ export function FilterBar({
         type="button"
         variant="secondary"
         onClick={onReset}
-        disabled={!hasActiveFilters}
+        disabled={resetDisabled ?? !hasActiveFilters}
         className="whitespace-nowrap"
       >
         {resetLabel}

@@ -12,6 +12,10 @@ import { AuthProvider } from "./app/AuthProvider";
 import { AppShell } from "./layouts/AppShell";
 import { DashboardRoute } from "./features/dashboard/routes/DashboardRoute";
 import {
+  PropertyDetailsPage,
+  PropertyListPage,
+} from "./features/properties/pages";
+import {
   ApplicationsPage,
   FinancePage,
   LeasesPage,
@@ -108,70 +112,90 @@ export default function App() {
               path="/properties"
               element={
                 <WorkflowRoute allowedRoles={MANAGEMENT_ROLES}>
-                  <PropertiesPage />
+                  <PropertyListPage />
                 </WorkflowRoute>
               }
             />
             <Route
-              path="/units"
+              path="/properties/:propertyId"
               element={
                 <WorkflowRoute allowedRoles={MANAGEMENT_ROLES}>
-                  <UnitsPage />
+                  <PropertyDetailsPage />
                 </WorkflowRoute>
               }
             />
-            <Route
-              path="/listings"
-              element={
-                <WorkflowRoute allowedRoles={MANAGEMENT_ROLES}>
-                  <ListingsPage />
-                </WorkflowRoute>
-              }
-            />
-            <Route
-              path="/applications"
-              element={
-                <WorkflowRoute allowedRoles={MANAGEMENT_ROLES}>
-                  <ApplicationsPage />
-                </WorkflowRoute>
-              }
-            />
-            <Route
-              path="/leases"
-              element={
-                <WorkflowRoute allowedRoles={MANAGEMENT_ROLES}>
-                  <LeasesPage />
-                </WorkflowRoute>
-              }
-            />
-            <Route
-              path="/finance"
-              element={
-                <WorkflowRoute allowedRoles={FINANCE_ROLES}>
-                  <FinancePage />
-                </WorkflowRoute>
-              }
-            />
-            <Route
-              path="/maintenance"
-              element={
-                <WorkflowRoute allowedRoles={MAINTENANCE_ROLES}>
-                  <MaintenancePage />
-                </WorkflowRoute>
-              }
-            />
-            <Route
-              path="/renewals"
-              element={
-                <WorkflowRoute allowedRoles={RENEWAL_ROLES}>
-                  <RenewalsPage />
-                </WorkflowRoute>
-              }
-            />
-            <Route
-              path="/available-listings"
-              element={<PublicListingsPage />}
-            />
+            {import.meta.env.DEV && (
+              <>
+                <Route
+                  path="/internal/workflows/properties"
+                  element={
+                    <WorkflowRoute allowedRoles={MANAGEMENT_ROLES}>
+                      <PropertiesPage />
+                    </WorkflowRoute>
+                  }
+                />
+                <Route
+                  path="/internal/workflows/units"
+                  element={
+                    <WorkflowRoute allowedRoles={MANAGEMENT_ROLES}>
+                      <UnitsPage />
+                    </WorkflowRoute>
+                  }
+                />
+                <Route
+                  path="/internal/workflows/listings"
+                  element={
+                    <WorkflowRoute allowedRoles={MANAGEMENT_ROLES}>
+                      <ListingsPage />
+                    </WorkflowRoute>
+                  }
+                />
+                <Route
+                  path="/internal/workflows/applications"
+                  element={
+                    <WorkflowRoute allowedRoles={MANAGEMENT_ROLES}>
+                      <ApplicationsPage />
+                    </WorkflowRoute>
+                  }
+                />
+                <Route
+                  path="/internal/workflows/leases"
+                  element={
+                    <WorkflowRoute allowedRoles={MANAGEMENT_ROLES}>
+                      <LeasesPage />
+                    </WorkflowRoute>
+                  }
+                />
+                <Route
+                  path="/internal/workflows/finance"
+                  element={
+                    <WorkflowRoute allowedRoles={FINANCE_ROLES}>
+                      <FinancePage />
+                    </WorkflowRoute>
+                  }
+                />
+                <Route
+                  path="/internal/workflows/maintenance"
+                  element={
+                    <WorkflowRoute allowedRoles={MAINTENANCE_ROLES}>
+                      <MaintenancePage />
+                    </WorkflowRoute>
+                  }
+                />
+                <Route
+                  path="/internal/workflows/renewals"
+                  element={
+                    <WorkflowRoute allowedRoles={RENEWAL_ROLES}>
+                      <RenewalsPage />
+                    </WorkflowRoute>
+                  }
+                />
+                <Route
+                  path="/internal/workflows/available-listings"
+                  element={<PublicListingsPage />}
+                />
+              </>
+            )}
             <Route
               path="/"
               element={<Navigate to="/dashboard" replace />}

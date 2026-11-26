@@ -20,3 +20,5 @@ export { Pagination } from "./Pagination";
 export type { PaginationProps } from "./Pagination";
 export { SearchInput } from "./SearchInput";
 export type { SearchInputProps } from "./SearchInput";
+export { SearchFilterBar } from "./SearchFilterBar";
+export type { SearchFilterBarProps } from "./SearchFilterBar";
