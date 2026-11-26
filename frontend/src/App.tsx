@@ -33,6 +33,16 @@ import {
   LeaseListPage,
 } from "./features/leases/pages";
 import {
+  ChargeDetailsPage,
+  ChargeListPage,
+  DepositDetailsPage,
+  DepositListPage,
+  PaymentDetailsPage,
+  PaymentListPage,
+  ReceiptDetailsPage,
+  ReceiptListPage,
+} from "./features/finance/pages";
+import {
   ApplicationsPage,
   FinancePage,
   LeasesPage,
@@ -209,6 +219,74 @@ export default function App() {
               element={
                 <WorkflowRoute allowedRoles={LEASE_ROLES}>
                   <LeaseDetailsPage />
+                </WorkflowRoute>
+              }
+            />
+            <Route
+              path="/finance"
+              element={<Navigate to="/finance/charges" replace />}
+            />
+            <Route
+              path="/finance/charges"
+              element={
+                <WorkflowRoute allowedRoles={FINANCE_ROLES}>
+                  <ChargeListPage />
+                </WorkflowRoute>
+              }
+            />
+            <Route
+              path="/finance/charges/:chargeId"
+              element={
+                <WorkflowRoute allowedRoles={FINANCE_ROLES}>
+                  <ChargeDetailsPage />
+                </WorkflowRoute>
+              }
+            />
+            <Route
+              path="/finance/deposits"
+              element={
+                <WorkflowRoute allowedRoles={FINANCE_ROLES}>
+                  <DepositListPage />
+                </WorkflowRoute>
+              }
+            />
+            <Route
+              path="/finance/deposits/:depositId"
+              element={
+                <WorkflowRoute allowedRoles={FINANCE_ROLES}>
+                  <DepositDetailsPage />
+                </WorkflowRoute>
+              }
+            />
+            <Route
+              path="/finance/payments"
+              element={
+                <WorkflowRoute allowedRoles={FINANCE_ROLES}>
+                  <PaymentListPage />
+                </WorkflowRoute>
+              }
+            />
+            <Route
+              path="/finance/payments/:paymentId"
+              element={
+                <WorkflowRoute allowedRoles={FINANCE_ROLES}>
+                  <PaymentDetailsPage />
+                </WorkflowRoute>
+              }
+            />
+            <Route
+              path="/finance/receipts"
+              element={
+                <WorkflowRoute allowedRoles={FINANCE_ROLES}>
+                  <ReceiptListPage />
+                </WorkflowRoute>
+              }
+            />
+            <Route
+              path="/finance/receipts/:receiptId"
+              element={
+                <WorkflowRoute allowedRoles={FINANCE_ROLES}>
+                  <ReceiptDetailsPage />
                 </WorkflowRoute>
               }
             />

@@ -109,7 +109,7 @@ export const DEFAULT_SIDEBAR_ITEMS: readonly SidebarItem[] = [
   {
     id: "finance",
     label: "Finance",
-    href: "/finance",
+    href: "/finance/charges",
     icon: (
       <svg fill="none" viewBox="0 0 24 24">
         <rect

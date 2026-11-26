@@ -81,6 +81,7 @@ Deposit filters are `status` and `lease` (also supports `tenant` and `search`).
 
 - `POST /api/v1/rent-charges/generate/` accepts `billing_month` and `billing_year` and generates charges for accessible active schedules.
 - `POST /api/v1/rent-charges/{id}/mark-overdue/`
+- `POST /api/v1/rent-charges/{id}/issue-invoice/` idempotently issues or returns the invoice for a charge.
 
 Rent charge filters are `status`, `tenant`, `lease`, `billing_month`, `billing_year`, and `search`.
 
@@ -90,6 +91,10 @@ Rent charge filters are `status`, `tenant`, `lease`, `billing_month`, `billing_y
 - `POST /api/v1/payments/{id}/reverse/`
 
 Payment filters are `status`, `tenant`, `payment_method`, and `search`. Receipts are read-only at `/api/v1/receipts/`; filters include `tenant`, `payment`, and `search`.
+
+The rent-charge response includes the optional `invoice_number`. The current API does not expose an invoice list or invoice detail/retrieve endpoint; clients must not infer invoice records or their issue dates from rent charges.
+
+Suggested future additions: a paginated, role-scoped `GET /api/v1/invoices/` with supported search/filter parameters and `GET /api/v1/invoices/{id}/` returning invoice fields plus its rent-charge reference. Until then, invoice list/detail screens are not supported.
 
 ## Maintenance
 

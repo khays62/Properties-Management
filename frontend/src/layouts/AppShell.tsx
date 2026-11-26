@@ -69,10 +69,17 @@ export function AppShell({
   const canManageProperties =
     user?.role === "OWNER" || user?.role === "PROPERTY_MANAGER";
   const canViewLeases = canManageProperties || user?.role === "TENANT";
+  const canViewFinance = [
+    "OWNER",
+    "PROPERTY_MANAGER",
+    "ACCOUNTANT",
+    "TENANT",
+  ].includes(user?.role ?? "");
   const navigation = DEFAULT_SIDEBAR_ITEMS.filter(
     (item) =>
       item.id === "dashboard" ||
       (item.id === "leases" && canViewLeases) ||
+      (item.id === "finance" && canViewFinance) ||
       ((item.id === "properties" ||
         item.id === "units" ||
         item.id === "listings" ||
@@ -80,7 +87,10 @@ export function AppShell({
         canManageProperties),
   ).map((item) => ({
     ...item,
-    active: pathname === item.href || pathname.startsWith(`${item.href}/`),
+    active:
+      (item.id === "finance" && pathname.startsWith("/finance")) ||
+      pathname === item.href ||
+      pathname.startsWith(`${item.href}/`),
   }));
 
   return (
