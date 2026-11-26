@@ -91,6 +91,22 @@ export const DEFAULT_SIDEBAR_ITEMS: readonly SidebarItem[] = [
     ),
   },
   {
+    id: "leases",
+    label: "Leases",
+    href: "/leases",
+    icon: (
+      <svg fill="none" viewBox="0 0 24 24">
+        <path
+          d="M7 3.75h7l4 4V20a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 6 20V5.25a1.5 1.5 0 0 1 1-1.5Zm7 0v4h4m-8 4h6m-6 4h6"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="1.7"
+        />
+      </svg>
+    ),
+  },
+  {
     id: "finance",
     label: "Finance",
     href: "/finance",

@@ -68,9 +68,11 @@ export function AppShell({
   }, []);
   const canManageProperties =
     user?.role === "OWNER" || user?.role === "PROPERTY_MANAGER";
+  const canViewLeases = canManageProperties || user?.role === "TENANT";
   const navigation = DEFAULT_SIDEBAR_ITEMS.filter(
     (item) =>
       item.id === "dashboard" ||
+      (item.id === "leases" && canViewLeases) ||
       ((item.id === "properties" ||
         item.id === "units" ||
         item.id === "listings" ||

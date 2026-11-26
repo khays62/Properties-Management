@@ -29,6 +29,10 @@ import {
   ApplicationListPage,
 } from "./features/applications/pages";
 import {
+  LeaseDetailsPage,
+  LeaseListPage,
+} from "./features/leases/pages";
+import {
   ApplicationsPage,
   FinancePage,
   LeasesPage,
@@ -77,6 +81,7 @@ const MAINTENANCE_ROLES: UserRole[] = [
   "TENANT",
 ];
 const RENEWAL_ROLES: UserRole[] = ["OWNER", "PROPERTY_MANAGER", "TENANT"];
+const LEASE_ROLES: UserRole[] = ["OWNER", "PROPERTY_MANAGER", "TENANT"];
 
 function WorkflowRoute({
   allowedRoles,
@@ -188,6 +193,22 @@ export default function App() {
               element={
                 <WorkflowRoute allowedRoles={MANAGEMENT_ROLES}>
                   <ApplicationDetailsPage />
+                </WorkflowRoute>
+              }
+            />
+            <Route
+              path="/leases"
+              element={
+                <WorkflowRoute allowedRoles={LEASE_ROLES}>
+                  <LeaseListPage />
+                </WorkflowRoute>
+              }
+            />
+            <Route
+              path="/leases/:leaseId"
+              element={
+                <WorkflowRoute allowedRoles={LEASE_ROLES}>
+                  <LeaseDetailsPage />
                 </WorkflowRoute>
               }
             />
