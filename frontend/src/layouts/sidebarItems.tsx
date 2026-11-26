@@ -123,6 +123,22 @@ export const DEFAULT_SIDEBAR_ITEMS: readonly SidebarItem[] = [
     ),
   },
   {
+    id: "renewals",
+    label: "Renewals",
+    href: "/renewals",
+    icon: (
+      <svg fill="none" viewBox="0 0 24 24">
+        <path
+          d="M20 7v5h-5M4 17v-5h5m10.2-1A7.5 7.5 0 0 0 6.1 7L4 9m16 6-2.1 2A7.5 7.5 0 0 1 4.8 13"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="1.7"
+        />
+      </svg>
+    ),
+  },
+  {
     id: "finance",
     label: "Finance",
     href: "/finance/charges",

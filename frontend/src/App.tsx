@@ -33,6 +33,10 @@ import {
   LeaseListPage,
 } from "./features/leases/pages";
 import {
+  RenewalAlertDetailsPage,
+  RenewalAlertListPage,
+} from "./features/renewals/pages";
+import {
   ChargeDetailsPage,
   ChargeListPage,
   DepositDetailsPage,
@@ -239,6 +243,22 @@ export default function App() {
               element={
                 <WorkflowRoute allowedRoles={MAINTENANCE_ROLES}>
                   <MaintenanceDetailsPage />
+                </WorkflowRoute>
+              }
+            />
+            <Route
+              path="/renewals"
+              element={
+                <WorkflowRoute allowedRoles={RENEWAL_ROLES}>
+                  <RenewalAlertListPage />
+                </WorkflowRoute>
+              }
+            />
+            <Route
+              path="/renewals/:alertId"
+              element={
+                <WorkflowRoute allowedRoles={RENEWAL_ROLES}>
+                  <RenewalAlertDetailsPage />
                 </WorkflowRoute>
               }
             />

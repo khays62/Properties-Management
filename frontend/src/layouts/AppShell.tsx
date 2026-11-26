@@ -80,6 +80,7 @@ export function AppShell({
     (item) =>
       item.id === "dashboard" ||
       (item.id === "leases" && canViewLeases) ||
+      (item.id === "renewals" && canViewLeases) ||
       (item.id === "maintenance" && canViewMaintenance) ||
       (item.id === "finance" && canViewFinance) ||
       ((item.id === "properties" ||
