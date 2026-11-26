@@ -18,6 +18,13 @@ export function PropertyActionsMenu({
   onView,
   property,
 }: PropertyActionsMenuProps) {
+  const archiveBlockedReason =
+    property.status !== "ACTIVE"
+      ? "Only active properties can be archived."
+      : property.unit_count > 0
+        ? `This property has ${property.unit_count} unit${property.unit_count === 1 ? "" : "s"}. Remove dependent records before archiving.`
+        : undefined;
+
   return (
     <ActionDropdown
       label={`Actions for ${property.name}`}
@@ -39,6 +46,8 @@ export function PropertyActionsMenu({
           id: "archive",
           label: "Archive property",
           variant: "danger",
+          disabled: Boolean(archiveBlockedReason),
+          disabledReason: archiveBlockedReason,
           onSelect: onArchive,
         },
       ]}

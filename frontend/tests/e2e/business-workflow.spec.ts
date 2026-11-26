@@ -35,7 +35,7 @@ async function saveForm(
 ) {
   await page.locator("form").nth(formIndex).getByRole("button", { name: buttonName }).click();
   await expect(
-    page.getByRole("status").filter({ hasText: "Saved successfully." }).last(),
+    page.getByText("Saved successfully.", { exact: true }).last(),
   ).toBeVisible();
 }
 
@@ -71,6 +71,28 @@ test("owner, manager, applicant, finance, maintenance, and renewal workflow", as
     await signIn(ownerPage, ownerEmail, ownerPassword);
 
     await ownerPage.goto("/properties");
+    await ownerPage.getByRole("button", { name: "Collapse sidebar" }).click();
+    await expect(
+      ownerPage.getByRole("button", { name: "Expand sidebar" }),
+    ).toBeVisible();
+    await expect
+      .poll(() =>
+        ownerPage.evaluate(() =>
+          localStorage.getItem("omniproperties.sidebar.collapsed"),
+        ),
+      )
+      .toBe("true");
+
+    let documentLoadCount = 0;
+    ownerPage.on("load", () => {
+      documentLoadCount += 1;
+    });
+    await ownerPage.getByRole("link", { name: "Dashboard" }).click();
+    await expect(ownerPage).toHaveURL(/\/dashboard$/);
+    await ownerPage.getByRole("link", { name: "Properties" }).click();
+    await expect(ownerPage).toHaveURL(/\/properties$/);
+    expect(documentLoadCount).toBe(0);
+
     await ownerPage.getByRole("button", { name: "Add property" }).click();
     const createPropertyDialog = ownerPage.getByRole("dialog", {
       name: "Create property",
@@ -92,9 +114,9 @@ test("owner, manager, applicant, finance, maintenance, and renewal workflow", as
     await createPropertyDialog
       .getByRole("button", { name: "Create property" })
       .click();
-    await expect(ownerPage.getByRole("status")).toContainText(
-      "Property created.",
-    );
+    await expect(
+      ownerPage.getByText("Property created.", { exact: true }),
+    ).toBeVisible();
 
     const featurePropertyRow = ownerPage
       .getByRole("row")
@@ -111,7 +133,7 @@ test("owner, manager, applicant, finance, maintenance, and renewal workflow", as
     await ownerPage
       .getByRole("button", { name: `Actions for ${featurePropertyName}` })
       .click();
-    await ownerPage.getByRole("button", { name: "Edit property" }).click();
+    await ownerPage.getByRole("menuitem", { name: "Edit property" }).click();
     const editPropertyDialog = ownerPage.getByRole("dialog", {
       name: "Edit property",
     });
@@ -121,14 +143,14 @@ test("owner, manager, applicant, finance, maintenance, and renewal workflow", as
     await editPropertyDialog
       .getByRole("button", { name: "Save changes" })
       .click();
-    await expect(ownerPage.getByRole("status")).toContainText(
-      "Property updated.",
-    );
+    await expect(
+      ownerPage.getByText("Property updated.", { exact: true }),
+    ).toBeVisible();
 
     await ownerPage
       .getByRole("button", { name: `Actions for ${featurePropertyName}` })
       .click();
-    await ownerPage.getByRole("button", { name: "Assign manager" }).click();
+    await ownerPage.getByRole("menuitem", { name: "Assign manager" }).click();
     const assignmentDialog = ownerPage.getByRole("dialog", {
       name: "Assign property manager",
     });
@@ -138,14 +160,14 @@ test("owner, manager, applicant, finance, maintenance, and renewal workflow", as
     await assignmentDialog
       .getByRole("button", { name: "Assign manager" })
       .click();
-    await expect(ownerPage.getByRole("status")).toContainText(
-      "Property manager assigned.",
-    );
+    await expect(
+      ownerPage.getByText("Property manager assigned.", { exact: true }),
+    ).toBeVisible();
 
     await ownerPage
       .getByRole("button", { name: `Actions for ${featurePropertyName}` })
       .click();
-    await ownerPage.getByRole("button", { name: "Archive property" }).click();
+    await ownerPage.getByRole("menuitem", { name: "Archive property" }).click();
     const archiveDialog = ownerPage.getByRole("dialog", {
       name: "Archive property?",
     });
@@ -213,7 +235,9 @@ test("owner, manager, applicant, finance, maintenance, and renewal workflow", as
     await applicantPage.getByLabel("Current address").fill("Mogadishu");
     await applicantPage.getByLabel("Preferred move-in date").fill(dateOffset(0));
     await applicantPage.getByRole("button", { name: "Submit application" }).click();
-    await expect(applicantPage.getByRole("status")).toContainText("Saved successfully.");
+    await expect(
+      applicantPage.getByText("Saved successfully.", { exact: true }),
+    ).toBeVisible();
     console.log("[e2e] applicant submitted application");
 
     await managerPage.goto("/internal/workflows/applications");
@@ -329,6 +353,30 @@ test("owner, manager, applicant, finance, maintenance, and renewal workflow", as
     await expect(
       managerPage.getByRole("table").filter({ hasText: `PAY-${runId}` }),
     ).toContainText("Completed");
+
+    await ownerPage.evaluate(() => {
+      localStorage.setItem("omniproperties.accessToken", "expired-access-token");
+    });
+    await ownerPage.goto("/properties");
+    await expect(ownerPage).toHaveURL(/\/properties$/);
+    await expect(
+      ownerPage.getByRole("heading", { name: "Properties" }),
+    ).toBeVisible();
+
+    await ownerPage.evaluate(() => {
+      localStorage.setItem("omniproperties.accessToken", "expired-access-token");
+      localStorage.setItem("omniproperties.refreshToken", "expired-refresh-token");
+    });
+    await ownerPage.goto("/properties");
+    await expect(ownerPage).toHaveURL(/\/login$/);
+    await expect(
+      ownerPage
+        .getByRole("region", { name: "Notifications alt+T" })
+        .getByText("Your session has expired. Please sign in again.", {
+          exact: true,
+        }),
+    ).toBeVisible();
+    console.log("[e2e] silent refresh and expired-session redirect");
   } finally {
     await ownerContext.close();
     await managerContext.close();

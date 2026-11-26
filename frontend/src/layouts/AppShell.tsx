@@ -7,9 +7,14 @@ import {
 } from "react";
 import { useLocation } from "react-router-dom";
 
-import { ContentContainer, type ContentMaxWidth, type ContentPadding } from "./ContentContainer";
+import {
+  ContentContainer,
+  type ContentMaxWidth,
+  type ContentPadding,
+} from "./ContentContainer";
 import { Navbar } from "./Navbar";
-import { Sidebar, type SidebarItem } from "./Sidebar";
+import { Sidebar } from "./Sidebar";
+import { DEFAULT_SIDEBAR_ITEMS } from "./sidebarItems";
 import { useAuth } from "../hooks/useAuth";
 
 export interface AppShellProps {
@@ -27,17 +32,26 @@ export function AppShell({
 }: AppShellProps) {
   const { user } = useAuth();
   const { pathname } = useLocation();
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(
+    () =>
+      window.localStorage.getItem("omniproperties.sidebar.collapsed") ===
+      "true",
+  );
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
-  const desktopToggleRef = useRef<HTMLButtonElement>(null);
   const mobileToggleRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    window.localStorage.setItem(
+      "omniproperties.sidebar.collapsed",
+      String(sidebarCollapsed),
+    );
+  }, [sidebarCollapsed]);
 
   useEffect(() => {
     const desktopMedia = window.matchMedia("(min-width: 1024px)");
     const closeOnDesktop = (event: MediaQueryListEvent) => {
       if (event.matches && mobileSidebarOpen) {
         setMobileSidebarOpen(false);
-        window.requestAnimationFrame(() => desktopToggleRef.current?.focus());
       }
     };
 
@@ -52,46 +66,53 @@ export function AppShell({
   const toggleMobileSidebar = useCallback(() => {
     setMobileSidebarOpen((open) => !open);
   }, []);
-  const navigation: SidebarItem[] = [
-    { id: "dashboard", label: "Dashboard", href: "/dashboard" },
-    ...(user?.role === "OWNER" || user?.role === "PROPERTY_MANAGER"
-      ? [{ id: "properties", label: "Properties", href: "/properties" }]
-      : []),
-  ].map((item) => ({
+  const canManageProperties =
+    user?.role === "OWNER" || user?.role === "PROPERTY_MANAGER";
+  const navigation = DEFAULT_SIDEBAR_ITEMS.filter(
+    (item) =>
+      item.id === "dashboard" ||
+      (item.id === "properties" && canManageProperties),
+  ).map((item) => ({
     ...item,
     active: pathname === item.href || pathname.startsWith(`${item.href}/`),
   }));
 
   return (
-    <div className={["min-h-screen bg-background", className].filter(Boolean).join(" ")}>
+    <div
+      className={[
+        "min-h-screen bg-background transition-[padding-left] duration-200 motion-reduce:transition-none",
+        sidebarCollapsed ? "lg:pl-20" : "lg:pl-[var(--sidebar-width)]",
+        className,
+      ]
+        .filter(Boolean)
+        .join(" ")}
+    >
+      <Sidebar
+        collapsed={sidebarCollapsed}
+        mobileOpen={mobileSidebarOpen}
+        onClose={closeMobileSidebar}
+        onToggleCollapsed={() =>
+          setSidebarCollapsed((collapsed) => !collapsed)
+        }
+        items={navigation}
+        returnFocusRef={mobileToggleRef}
+      />
       <Navbar
-        sidebarCollapsed={sidebarCollapsed}
         mobileSidebarOpen={mobileSidebarOpen}
-        onToggleSidebar={() => setSidebarCollapsed((collapsed) => !collapsed)}
         onToggleMobileSidebar={toggleMobileSidebar}
-        desktopToggleRef={desktopToggleRef}
         mobileToggleRef={mobileToggleRef}
       />
-      <div className="flex min-h-[calc(100vh-var(--header-height))]">
-        <Sidebar
-          collapsed={sidebarCollapsed}
-          mobileOpen={mobileSidebarOpen}
-          onClose={closeMobileSidebar}
-          items={navigation}
-          returnFocusRef={mobileToggleRef}
-        />
-        <main
-          aria-hidden={mobileSidebarOpen || undefined}
-          className="min-w-0 flex-1"
+      <main
+        aria-hidden={mobileSidebarOpen || undefined}
+        className="min-w-0"
+      >
+        <ContentContainer
+          maxWidth={maxContentWidth}
+          padding={contentPadding}
         >
-          <ContentContainer
-            maxWidth={maxContentWidth}
-            padding={contentPadding}
-          >
-            {children}
-          </ContentContainer>
-        </main>
-      </div>
+          {children}
+        </ContentContainer>
+      </main>
     </div>
   );
 }

@@ -1,102 +1,18 @@
-import {
-  useEffect,
-  useRef,
-  type ReactNode,
-  type RefObject,
-} from "react";
+import { useEffect, useRef, type RefObject } from "react";
+import { Link } from "react-router-dom";
 
 import { AppLogo } from "./AppLogo";
-
-export interface SidebarItem {
-  id: string;
-  label: string;
-  icon?: ReactNode;
-  href?: string;
-  onClick?: () => void;
-  active?: boolean;
-  disabled?: boolean;
-}
+import { DEFAULT_SIDEBAR_ITEMS, type SidebarItem } from "./sidebarItems";
 
 export interface SidebarProps {
   collapsed: boolean;
   mobileOpen: boolean;
   onClose: () => void;
+  onToggleCollapsed: () => void;
   items?: readonly SidebarItem[];
   returnFocusRef?: RefObject<HTMLButtonElement | null>;
   className?: string;
 }
-
-const DEFAULT_ITEMS: readonly SidebarItem[] = [
-  {
-    id: "dashboard",
-    label: "Dashboard",
-    href: "/dashboard",
-    icon: (
-      <svg fill="none" viewBox="0 0 24 24">
-        <path
-          d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z"
-          stroke="currentColor"
-          strokeLinejoin="round"
-          strokeWidth="1.7"
-        />
-      </svg>
-    ),
-  },
-  {
-    id: "properties",
-    label: "Properties",
-    icon: (
-      <svg fill="none" viewBox="0 0 24 24">
-        <path
-          d="m3.5 10 8.5-6 8.5 6v10h-6v-6h-5v6h-6z"
-          stroke="currentColor"
-          strokeLinejoin="round"
-          strokeWidth="1.7"
-        />
-      </svg>
-    ),
-  },
-  {
-    id: "listings",
-    label: "Listings",
-    icon: (
-      <svg fill="none" viewBox="0 0 24 24">
-        <path
-          d="M5 6h14M5 12h14M5 18h14"
-          stroke="currentColor"
-          strokeLinecap="round"
-          strokeWidth="1.7"
-        />
-        <circle cx="3" cy="6" r=".75" fill="currentColor" />
-        <circle cx="3" cy="12" r=".75" fill="currentColor" />
-        <circle cx="3" cy="18" r=".75" fill="currentColor" />
-      </svg>
-    ),
-  },
-  {
-    id: "finance",
-    label: "Finance",
-    icon: (
-      <svg fill="none" viewBox="0 0 24 24">
-        <rect
-          x="3.5"
-          y="5.5"
-          width="17"
-          height="13"
-          rx="2"
-          stroke="currentColor"
-          strokeWidth="1.7"
-        />
-        <path
-          d="M3.5 10h17m-4.5 4h2"
-          stroke="currentColor"
-          strokeLinecap="round"
-          strokeWidth="1.7"
-        />
-      </svg>
-    ),
-  },
-];
 
 function SidebarNavigation({
   collapsed,
@@ -138,8 +54,8 @@ function SidebarNavigation({
           return (
             <li key={item.id}>
               {item.href && !item.disabled ? (
-                <a
-                  href={item.href}
+                <Link
+                  to={item.href}
                   title={title}
                   aria-current={item.active ? "page" : undefined}
                   onClick={() => {
@@ -149,7 +65,7 @@ function SidebarNavigation({
                   className={itemClassName}
                 >
                   {content}
-                </a>
+                </Link>
               ) : item.onClick && !item.disabled ? (
                 <button
                   type="button"
@@ -183,9 +99,10 @@ function SidebarNavigation({
 export function Sidebar({
   className,
   collapsed,
-  items = DEFAULT_ITEMS,
+  items = DEFAULT_SIDEBAR_ITEMS,
   mobileOpen,
   onClose,
+  onToggleCollapsed,
   returnFocusRef,
 }: SidebarProps) {
   const drawerRef = useRef<HTMLElement>(null);
@@ -249,7 +166,7 @@ export function Sidebar({
         id="app-desktop-sidebar"
         aria-label="Primary sidebar"
         className={[
-          "hidden h-[calc(100vh-var(--header-height))] shrink-0 flex-col border-r border-white/10 bg-sidebar-dark text-white transition-[width] duration-200 lg:sticky lg:top-[var(--header-height)] lg:flex",
+          "fixed inset-y-0 left-0 z-[var(--z-index-dropdown)] hidden h-screen shrink-0 flex-col border-r border-white/10 bg-sidebar-dark text-white transition-[width] duration-200 motion-reduce:transition-none lg:flex",
           collapsed ? "w-20" : "w-[var(--sidebar-width)]",
           className,
         ]
@@ -265,6 +182,41 @@ export function Sidebar({
           <AppLogo variant={collapsed ? "collapsed" : "expanded"} />
         </div>
         <SidebarNavigation collapsed={collapsed} items={items} />
+        <div className="shrink-0 border-t border-white/10 p-3">
+          <button
+            type="button"
+            title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            aria-expanded={!collapsed}
+            aria-controls="app-desktop-sidebar"
+            onClick={onToggleCollapsed}
+            className={[
+              "flex min-h-11 w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-white/75 transition-colors hover:bg-white/10 hover:text-white",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-omni-blue",
+              collapsed ? "justify-center px-2" : "",
+            ]
+              .filter(Boolean)
+              .join(" ")}
+          >
+            <svg
+              aria-hidden="true"
+              className="h-5 w-5 shrink-0"
+              fill="none"
+              viewBox="0 0 20 20"
+            >
+              <path
+                d={collapsed ? "m7 4 6 6-6 6" : "m13 4-6 6 6 6"}
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="1.7"
+              />
+            </svg>
+            <span className={collapsed ? "sr-only" : "truncate"}>
+              {collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            </span>
+          </button>
+        </div>
       </aside>
 
       {mobileOpen && (
@@ -274,7 +226,7 @@ export function Sidebar({
             tabIndex={-1}
             aria-label="Close navigation"
             onClick={onClose}
-            className="fixed inset-x-0 bottom-0 top-[var(--header-height)] z-[var(--z-index-overlay)] bg-black/50 lg:hidden"
+            className="fixed inset-0 z-[var(--z-index-overlay)] bg-black/50 lg:hidden"
           />
           <aside
             ref={drawerRef}
@@ -283,7 +235,7 @@ export function Sidebar({
             aria-modal="true"
             aria-label="Mobile navigation"
             className={[
-              "fixed bottom-0 left-0 top-[var(--header-height)] z-[var(--z-index-modal)] flex w-[var(--sidebar-width)] max-w-[85vw] flex-col bg-sidebar-dark text-white shadow-xl lg:hidden",
+              "fixed inset-y-0 left-0 z-[var(--z-index-modal)] flex w-[var(--sidebar-width)] max-w-[85vw] flex-col bg-sidebar-dark text-white shadow-xl lg:hidden",
               className,
             ]
               .filter(Boolean)

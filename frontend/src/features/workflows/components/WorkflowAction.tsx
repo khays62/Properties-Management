@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { Button, type ButtonVariant } from "../../../components/ui/Button";
+import { toastService } from "../../../services/toastService";
 import { getWorkflowErrorMessage } from "../api";
 
 export interface WorkflowActionProps {
@@ -17,19 +18,15 @@ export function WorkflowAction({
 }: WorkflowActionProps) {
   const queryClient = useQueryClient();
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [complete, setComplete] = useState(false);
 
   async function handleAction() {
     setBusy(true);
-    setError(null);
-    setComplete(false);
     try {
       await onAction();
       await queryClient.invalidateQueries({ queryKey: ["workflow"] });
-      setComplete(true);
+      toastService.success(`${label} completed.`);
     } catch (actionError) {
-      setError(getWorkflowErrorMessage(actionError));
+      toastService.error(getWorkflowErrorMessage(actionError));
     } finally {
       setBusy(false);
     }
@@ -46,16 +43,6 @@ export function WorkflowAction({
       >
         {label}
       </Button>
-      {complete && (
-        <span className="text-xs text-success" role="status">
-          Completed.
-        </span>
-      )}
-      {error && (
-        <span className="max-w-56 text-xs text-danger" role="alert">
-          {error}
-        </span>
-      )}
     </span>
   );
 }

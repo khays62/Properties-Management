@@ -6,6 +6,7 @@ import { Card } from "../../../components/ui/Card";
 import { Input } from "../../../components/ui/Input";
 import { Select } from "../../../components/ui/Select";
 import { Textarea } from "../../../components/ui/Textarea";
+import { toastService } from "../../../services/toastService";
 import { getWorkflowErrorMessage, type WorkflowOption } from "../api";
 
 export interface WorkflowField {
@@ -34,14 +35,10 @@ export function WorkflowForm({
 }: WorkflowFormProps) {
   const queryClient = useQueryClient();
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setBusy(true);
-    setError(null);
-    setSuccess(false);
 
     const form = event.currentTarget;
     const formData = new FormData(form);
@@ -53,9 +50,9 @@ export function WorkflowForm({
       await onSubmit(values);
       await queryClient.invalidateQueries({ queryKey: ["workflow"] });
       form.reset();
-      setSuccess(true);
+      toastService.success("Saved successfully.");
     } catch (submitError) {
-      setError(getWorkflowErrorMessage(submitError));
+      toastService.error(getWorkflowErrorMessage(submitError));
     } finally {
       setBusy(false);
     }
@@ -112,17 +109,7 @@ export function WorkflowForm({
           <Button type="submit" isLoading={busy}>
             {submitLabel}
           </Button>
-          {success && (
-            <span className="text-sm text-success" role="status">
-              Saved successfully.
-            </span>
-          )}
         </div>
-        {error && (
-          <p className="text-sm text-danger" role="alert">
-            {error}
-          </p>
-        )}
       </form>
     </Card>
   );

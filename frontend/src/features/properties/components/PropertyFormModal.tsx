@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -7,6 +7,7 @@ import { AddressField, NotesField } from "../../../components/form";
 import { CreateEditModal } from "../../../components/overlays";
 import { Input } from "../../../components/ui/Input";
 import { getPropertyErrorMessage } from "../api/properties.api";
+import { toastService } from "../../../services/toastService";
 import type { Property, PropertyInput } from "../types/property";
 
 const propertyFormSchema = z.object({
@@ -60,7 +61,6 @@ export function PropertyFormModal({
   open,
   property,
 }: PropertyFormModalProps) {
-  const [submitError, setSubmitError] = useState<string | null>(null);
   const {
     formState: { errors, isSubmitting },
     handleSubmit,
@@ -77,19 +77,19 @@ export function PropertyFormModal({
   }, [open, property, reset]);
 
   function closeModal() {
-    setSubmitError(null);
     onClose();
   }
 
   const submit = handleSubmit(async (values) => {
-    setSubmitError(null);
     try {
       await onSave(values);
       onSaved?.();
       closeModal();
     } catch (error) {
-      setSubmitError(getPropertyErrorMessage(error));
+      toastService.error(getPropertyErrorMessage(error));
     }
+  }, () => {
+    toastService.error("Please correct the highlighted fields.");
   });
 
   return (
@@ -105,7 +105,6 @@ export function PropertyFormModal({
       onClose={closeModal}
       onSubmit={(event) => void submit(event)}
       isSubmitting={isSaving || isSubmitting}
-      error={submitError}
     >
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="sm:col-span-2">

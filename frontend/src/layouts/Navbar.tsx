@@ -13,23 +13,17 @@ import { Button } from "../components/ui/Button";
 import { AppLogo } from "./AppLogo";
 
 export interface NavbarProps {
-  sidebarCollapsed: boolean;
   mobileSidebarOpen: boolean;
-  onToggleSidebar: () => void;
   onToggleMobileSidebar: () => void;
-  desktopToggleRef?: Ref<HTMLButtonElement>;
   mobileToggleRef?: Ref<HTMLButtonElement>;
   className?: string;
 }
 
 export function Navbar({
   className,
-  desktopToggleRef,
   mobileSidebarOpen,
   mobileToggleRef,
   onToggleMobileSidebar,
-  onToggleSidebar,
-  sidebarCollapsed,
 }: NavbarProps) {
   const { logout } = useAuth();
   const queryClient = useQueryClient();
@@ -108,36 +102,6 @@ export function Navbar({
         .join(" ")}
     >
       <div className="flex min-w-0 items-center gap-3">
-        <Button
-          type="button"
-          ref={desktopToggleRef}
-          variant="ghost"
-          size="sm"
-          aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-          aria-expanded={!sidebarCollapsed}
-          aria-controls="app-desktop-sidebar"
-          onClick={onToggleSidebar}
-          className="hidden h-10 w-10 min-h-0 p-0 text-text-secondary lg:inline-flex"
-        >
-          <svg
-            aria-hidden="true"
-            className="h-5 w-5"
-            fill="none"
-            viewBox="0 0 20 20"
-          >
-            <path
-              d={
-                sidebarCollapsed
-                  ? "m7 4 6 6-6 6"
-                  : "m13 4-6 6 6 6"
-              }
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="1.7"
-            />
-          </svg>
-        </Button>
         <Button
           ref={mobileToggleRef}
           type="button"

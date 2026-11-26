@@ -45,6 +45,14 @@ class PropertyService:
             if locked_property.status != PropertyStatus.ACTIVE:
                 raise ConflictErrorResponse("Only active properties can be archived.")
 
+            unit_count = locked_property.units.count()
+            if unit_count:
+                raise ConflictErrorResponse(
+                    "This property cannot be archived while it has associated "
+                    f"units ({unit_count}) or dependent listings, applications, "
+                    "leases, maintenance records, or financial records."
+                )
+
             old_status = locked_property.status
             locked_property.status = PropertyStatus.ARCHIVED
             locked_property.save(update_fields=["status", "updated_at"])

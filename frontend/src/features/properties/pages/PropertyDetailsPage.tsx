@@ -7,12 +7,12 @@ import {
   PageHeader,
   type DataTableColumn,
 } from "../../../components/data";
-import { Alert } from "../../../components/feedback/Alert";
 import { ErrorState } from "../../../components/feedback/ErrorState";
 import { LoadingState } from "../../../components/feedback/LoadingState";
 import { Card } from "../../../components/ui/Card";
 import { StatusBadge } from "../../../components/ui/StatusBadge";
 import { useAuth } from "../../../hooks/useAuth";
+import { toastService } from "../../../services/toastService";
 import { getPropertyErrorMessage } from "../api/properties.api";
 import { PropertyActionDialogs } from "../components/PropertyActionDialogs";
 import { PropertyActionsMenu } from "../components/PropertyActionsMenu";
@@ -59,7 +59,6 @@ export function PropertyDetailsPage() {
   const [archivingProperty, setArchivingProperty] = useState<Property | null>(
     null,
   );
-  const [notice, setNotice] = useState<string | null>(null);
   const isOwner = user?.role === "OWNER";
 
   if (query.isLoading) {
@@ -115,12 +114,6 @@ export function PropertyDetailsPage() {
         }
       />
 
-      {notice && (
-        <Alert variant="success" role="status">
-          {notice}
-        </Alert>
-      )}
-
       <Card className="space-y-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-base font-semibold text-text-primary">
@@ -175,7 +168,7 @@ export function PropertyDetailsPage() {
         onCloseEdit={() => setEditingProperty(null)}
         onCloseAssignment={() => setAssigningProperty(null)}
         onCloseArchive={() => setArchivingProperty(null)}
-        onSaved={setNotice}
+        onSaved={(message) => toastService.success(message)}
         onArchived={() => {
           setArchivingProperty(null);
           navigate("/properties");

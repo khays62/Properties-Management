@@ -22,6 +22,8 @@ class PropertyAssignmentSerializer(serializers.ModelSerializer):
 
 
 class PropertySerializer(serializers.ModelSerializer):
+    unit_count = serializers.SerializerMethodField()
+
     class Meta:
         model = Property
         fields = (
@@ -34,10 +36,16 @@ class PropertySerializer(serializers.ModelSerializer):
             "city",
             "country",
             "status",
+            "unit_count",
             "created_at",
             "updated_at",
         )
         read_only_fields = ("id", "owner", "status", "created_at", "updated_at")
+
+    def get_unit_count(self, obj: Property) -> int:
+        if hasattr(obj, "unit_count"):
+            return obj.unit_count
+        return obj.units.count()
 
 
 class UnitSerializer(serializers.ModelSerializer):

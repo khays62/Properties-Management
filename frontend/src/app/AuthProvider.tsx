@@ -2,9 +2,12 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 
 import {
   AUTH_SESSION_EXPIRED_EVENT,
@@ -16,6 +19,7 @@ import {
   refresh as refreshRequest,
 } from "../services/auth.api";
 import { tokenStorage } from "../services/tokenStorage";
+import { toastService } from "../services/toastService";
 import type { LoginCredentials, User } from "../types/auth";
 import { AuthContext, type AuthStatus } from "./AuthContext";
 
@@ -24,6 +28,9 @@ export interface AuthProviderProps {
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const sessionExpiredRef = useRef(false);
   const [user, setUser] = useState<User | null>(null);
   const [status, setStatus] = useState<AuthStatus>("loading");
   const [error, setError] = useState<string | null>(null);
@@ -38,15 +45,23 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const login = useCallback(
     async (credentials: LoginCredentials) => {
+      sessionExpiredRef.current = false;
       setError(null);
       try {
         await loginRequest(credentials);
-        return await fetchCurrentUser();
+        const currentUser = await fetchCurrentUser();
+        sessionExpiredRef.current = false;
+        return currentUser;
       } catch (loginError) {
+        const sessionExpired = sessionExpiredRef.current;
         tokenStorage.clearTokens();
         setUser(null);
         setStatus("unauthenticated");
-        setError(getAuthErrorMessage(loginError));
+        setError(
+          sessionExpired
+            ? "Your session has expired. Please sign in again."
+            : getAuthErrorMessage(loginError),
+        );
         throw loginError;
       }
     },
@@ -55,6 +70,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const logout = useCallback(() => {
     tokenStorage.clearTokens();
+    sessionExpiredRef.current = false;
     setUser(null);
     setStatus("unauthenticated");
     setError(null);
@@ -66,10 +82,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
       await refreshRequest();
       return await fetchCurrentUser();
     } catch (refreshError) {
+      const sessionExpired = sessionExpiredRef.current;
       tokenStorage.clearTokens();
       setUser(null);
       setStatus("unauthenticated");
-      setError(getAuthErrorMessage(refreshError));
+      setError(
+        sessionExpired
+          ? "Your session has expired. Please sign in again."
+          : getAuthErrorMessage(refreshError),
+      );
       throw refreshError;
     }
   }, [fetchCurrentUser]);
@@ -78,9 +99,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
     let active = true;
 
     const handleSessionExpired = () => {
+      if (sessionExpiredRef.current) return;
+      sessionExpiredRef.current = true;
+      const message = "Your session has expired. Please sign in again.";
       setUser(null);
       setStatus("unauthenticated");
-      setError("Your session has expired. Please sign in again.");
+      setError(message);
+      void queryClient.cancelQueries().then(() => queryClient.clear());
+      toastService.error(message);
+      navigate("/login", { replace: true });
     };
 
     const bootstrap = async () => {
@@ -102,9 +129,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
       } catch (bootstrapError) {
         if (!active) return;
 
+        const message = sessionExpiredRef.current
+          ? "Your session has expired. Please sign in again."
+          : getAuthErrorMessage(bootstrapError);
         setUser(null);
         setStatus("unauthenticated");
-        setError(getAuthErrorMessage(bootstrapError));
+        setError(message);
       }
     };
 
@@ -118,7 +148,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         handleSessionExpired,
       );
     };
-  }, []);
+  }, [navigate, queryClient]);
 
   const value = useMemo(
     () => ({

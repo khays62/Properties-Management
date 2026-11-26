@@ -9,6 +9,7 @@ import {
 } from "react-router-dom";
 
 import { AuthProvider } from "./app/AuthProvider";
+import { ToastProvider } from "./components/feedback/ToastProvider";
 import { AppShell } from "./layouts/AppShell";
 import { DashboardRoute } from "./features/dashboard/routes/DashboardRoute";
 import {
@@ -84,8 +85,9 @@ function WorkflowRoute({
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <BrowserRouter>
+      <BrowserRouter>
+        <AuthProvider>
+          <ToastProvider />
           <Routes>
             <Route
               path="/login"
@@ -205,8 +207,8 @@ export default function App() {
               element={<Navigate to="/dashboard" replace />}
             />
           </Routes>
-        </BrowserRouter>
-      </AuthProvider>
+        </AuthProvider>
+      </BrowserRouter>
     </QueryClientProvider>
   );
 }

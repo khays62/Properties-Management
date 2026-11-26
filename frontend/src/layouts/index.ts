@@ -11,4 +11,5 @@ export type {
 export { Navbar } from "./Navbar";
 export type { NavbarProps } from "./Navbar";
 export { Sidebar } from "./Sidebar";
-export type { SidebarItem, SidebarProps } from "./Sidebar";
+export type { SidebarProps } from "./Sidebar";
+export type { SidebarItem } from "./sidebarItems";

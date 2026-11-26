@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -6,6 +6,7 @@ import { z } from "zod";
 import { Alert } from "../../../components/feedback/Alert";
 import { FormModal } from "../../../components/overlays";
 import { Input } from "../../../components/ui/Input";
+import { toastService } from "../../../services/toastService";
 import { getPropertyErrorMessage } from "../api/properties.api";
 import { useAssignPropertyManager } from "../hooks/useProperties";
 import type { Property } from "../types/property";
@@ -28,7 +29,6 @@ export function PropertyAssignmentModal({
   property,
 }: PropertyAssignmentModalProps) {
   const assignMutation = useAssignPropertyManager();
-  const [submitError, setSubmitError] = useState<string | null>(null);
   const {
     formState: { errors, isSubmitting },
     handleSubmit,
@@ -45,13 +45,11 @@ export function PropertyAssignmentModal({
   }, [property, reset]);
 
   function closeModal() {
-    setSubmitError(null);
     onClose();
   }
 
   const submit = handleSubmit(async ({ manager_email }) => {
     if (!property) return;
-    setSubmitError(null);
     try {
       await assignMutation.mutateAsync({
         propertyId: property.id,
@@ -60,8 +58,10 @@ export function PropertyAssignmentModal({
       onAssigned?.();
       closeModal();
     } catch (error) {
-      setSubmitError(getPropertyErrorMessage(error));
+      toastService.error(getPropertyErrorMessage(error));
     }
+  }, () => {
+    toastService.error("Enter a valid manager email address.");
   });
 
   return (
@@ -77,7 +77,6 @@ export function PropertyAssignmentModal({
       onSubmit={(event) => void submit(event)}
       submitLabel="Assign manager"
       isSubmitting={isSubmitting || assignMutation.isPending}
-      error={submitError}
     >
       {property && (
         <div className="space-y-4">

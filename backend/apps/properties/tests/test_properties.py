@@ -69,6 +69,26 @@ class PropertyApiTests(APITestCase):
         self.assertEqual(created_property.owner, self.owner)
         self.assertEqual(created_property.status, PropertyStatus.ACTIVE)
 
+    def test_property_list_includes_unit_count_for_archive_availability(self):
+        UnitService.create_unit(
+            created_by=self.owner,
+            property=self.property,
+            unit_number="A-101",
+            floor=1,
+            bedrooms=2,
+            bathrooms=Decimal("1.50"),
+            square_meters=Decimal("72.50"),
+            rent_amount=Decimal("650.00"),
+            deposit_amount=Decimal("650.00"),
+        )
+
+        response = self.client.get(reverse("properties:property-list"))
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        property_data = response.data["results"][0]
+        self.assertEqual(property_data["id"], str(self.property.pk))
+        self.assertEqual(property_data["unit_count"], 1)
+
     def test_owner_assigns_property_manager_idempotently(self):
         manager = User.objects.create_user(
             email="manager@example.com",
@@ -231,6 +251,36 @@ class PropertyApiTests(APITestCase):
                 model_name="Property",
                 object_id=str(self.property.pk),
                 user=self.owner,
+            ).exists()
+        )
+
+    def test_property_with_units_cannot_be_archived(self):
+        UnitService.create_unit(
+            created_by=self.owner,
+            property=self.property,
+            unit_number="A-101",
+            floor=1,
+            bedrooms=2,
+            bathrooms=Decimal("1.50"),
+            square_meters=Decimal("72.50"),
+            rent_amount=Decimal("650.00"),
+            deposit_amount=Decimal("650.00"),
+        )
+
+        response = self.client.post(
+            reverse("properties:property-archive", kwargs={"pk": self.property.pk}),
+            {},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
+        self.assertIn("associated units", str(response.data["detail"]))
+        self.property.refresh_from_db()
+        self.assertEqual(self.property.status, PropertyStatus.ACTIVE)
+        self.assertFalse(
+            AuditLog.objects.filter(
+                action=AuditAction.PROPERTY_ARCHIVED,
+                object_id=str(self.property.pk),
             ).exists()
         )
 

@@ -13,6 +13,7 @@ export const propertySchema = z
     city: z.string(),
     country: z.string(),
     status: z.enum(PROPERTY_STATUSES),
+    unit_count: z.number().int().nonnegative(),
     created_at: z.string(),
     updated_at: z.string(),
   })

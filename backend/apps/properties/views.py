@@ -1,4 +1,4 @@
-from django.db.models import QuerySet
+from django.db.models import Count, QuerySet
 from rest_framework import mixins, serializers, viewsets
 from rest_framework.decorators import action
 from rest_framework.request import Request
@@ -45,6 +45,10 @@ class PropertyViewSet(
             status=self.request.query_params.get("status"),
             city=self.request.query_params.get("city"),
             search=self.request.query_params.get("search"),
+        )
+        queryset = queryset.annotate(unit_count=Count("units")).order_by(
+            "name",
+            "id",
         )
         if self.action == "retrieve":
             queryset = queryset.prefetch_related("units")

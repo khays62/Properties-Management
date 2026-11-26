@@ -9,11 +9,11 @@ import {
   type DataTableColumn,
   type FilterDefinition,
 } from "../../../components/data";
-import { Alert } from "../../../components/feedback/Alert";
 import { ErrorState } from "../../../components/feedback/ErrorState";
 import { Button } from "../../../components/ui/Button";
 import { StatusBadge } from "../../../components/ui/StatusBadge";
 import { useAuth } from "../../../hooks/useAuth";
+import { toastService } from "../../../services/toastService";
 import { getPropertyErrorMessage } from "../api/properties.api";
 import { PropertyActionDialogs } from "../components/PropertyActionDialogs";
 import { PropertyActionsMenu } from "../components/PropertyActionsMenu";
@@ -47,7 +47,6 @@ export function PropertyListPage() {
   const [archivingProperty, setArchivingProperty] = useState<Property | null>(
     null,
   );
-  const [notice, setNotice] = useState<string | null>(null);
   const [searchValue, setSearchValue] = useState("");
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<PropertyStatus | "">("");
@@ -131,7 +130,6 @@ export function PropertyListPage() {
             onEdit={() => setEditingProperty(property)}
             onAssignManager={() => setAssigningProperty(property)}
             onArchive={() => {
-              setNotice(null);
               setArchivingProperty(property);
             }}
           />
@@ -169,12 +167,6 @@ export function PropertyListPage() {
           ) : undefined
         }
       />
-
-      {notice && (
-        <Alert variant="success" role="status">
-          {notice}
-        </Alert>
-      )}
 
       <SearchFilterBar
         searchValue={searchValue}
@@ -221,7 +213,7 @@ export function PropertyListPage() {
       <PropertyCreateModal
         open={createOpen}
         onClose={() => setCreateOpen(false)}
-        onCreated={() => setNotice("Property created.")}
+        onCreated={() => toastService.success("Property created.")}
       />
       <PropertyActionDialogs
         editingProperty={editingProperty}
@@ -230,11 +222,10 @@ export function PropertyListPage() {
         onCloseEdit={() => setEditingProperty(null)}
         onCloseAssignment={() => setAssigningProperty(null)}
         onCloseArchive={() => setArchivingProperty(null)}
-        onSaved={setNotice}
+        onSaved={(message) => toastService.success(message)}
         onArchived={() => {
           setArchivingProperty(null);
           setPage(1);
-          setNotice("Property archived.");
         }}
       />
     </div>
