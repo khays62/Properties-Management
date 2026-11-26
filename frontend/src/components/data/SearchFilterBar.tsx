@@ -50,7 +50,6 @@ export function SearchFilterBar({
         onFilterChange={onFilterChange}
         onReset={onReset}
         resetDisabled={!canReset}
-        className="lg:justify-end"
       />
     </div>
   );

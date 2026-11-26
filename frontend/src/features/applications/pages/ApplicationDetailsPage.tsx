@@ -569,14 +569,14 @@ export function ApplicationDetailsPage() {
         onConfirm={() => void performApplicationTransition("review")}
       />
       <ApplicationRejectionModal
-        key={rejectionOpen ? "open" : "closed"}
+        key={`application-rejection-${rejectionOpen ? "open" : "closed"}`}
         open={rejectionOpen}
         isSubmitting={rejectionMutation.isPending}
         onClose={() => setRejectionOpen(false)}
         onSubmit={(reason) => void rejectApplication(reason)}
       />
       <ScreeningResultModal
-        key={screeningResultAction ?? "closed"}
+        key={`screening-result-${screeningResultAction ?? "closed"}`}
         action={screeningResultAction}
         isSubmitting={screeningMutation.isPending}
         onClose={() => setScreeningResultAction(null)}

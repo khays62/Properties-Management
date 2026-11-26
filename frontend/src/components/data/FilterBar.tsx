@@ -63,7 +63,7 @@ export function FilterBar({
       aria-label={ariaLabel}
       className={[
         isToolbar
-          ? "grid grid-cols-[repeat(auto-fit,minmax(min(100%,10rem),1fr))] items-end gap-3"
+          ? "flex flex-wrap items-end gap-3"
           : "flex flex-wrap items-end gap-3",
         className,
       ]
@@ -71,14 +71,24 @@ export function FilterBar({
         .join(" ")}
     >
       {leadingControl && (
-        <div className={isToolbar ? "min-w-0" : "min-w-[12rem] flex-1"}>
+        <div
+          className={
+            isToolbar
+              ? "min-w-0 grow shrink basis-full sm:min-w-64 sm:basis-64"
+              : "min-w-[12rem] flex-1"
+          }
+        >
           {leadingControl}
         </div>
       )}
       {filters.map((filter) => (
         <div
           key={filter.id}
-          className={isToolbar ? "min-w-0" : "min-w-[12rem] flex-1"}
+          className={
+            isToolbar
+              ? "min-w-0 grow shrink basis-full sm:min-w-48 sm:basis-48"
+              : "min-w-[12rem] flex-1"
+          }
         >
           {filter.type === "text" ? (
             <Input
@@ -133,7 +143,7 @@ export function FilterBar({
         disabled={resetDisabled ?? !hasActiveFilters}
         className={
           isToolbar
-            ? "h-11 w-full self-end whitespace-nowrap"
+            ? "h-11 shrink-0 self-end whitespace-nowrap"
             : "whitespace-nowrap"
         }
       >
