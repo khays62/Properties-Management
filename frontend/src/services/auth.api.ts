@@ -31,6 +31,22 @@ export async function fetchCurrentUser(): Promise<User> {
   return response.data;
 }
 
+export interface TenantPasswordSetupInput {
+  uid: string;
+  token: string;
+  new_password: string;
+}
+
+export async function setupTenantPassword(
+  values: TenantPasswordSetupInput,
+): Promise<{ detail: string }> {
+  const response = await api.post<{ detail: string }>(
+    "auth/tenant-password-setup/",
+    values,
+  );
+  return response.data;
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }

@@ -189,3 +189,84 @@ class ListingApiTests(APITestCase):
         results = response.data["results"]
         self.assertEqual([item["id"] for item in results], [str(published.pk)])
         self.assertNotIn(str(draft.pk), [item["id"] for item in results])
+        self.assertEqual(
+            set(results[0]),
+            {
+                "id",
+                "title",
+                "description",
+                "rent_amount",
+                "deposit_amount",
+                "available_date",
+                "status",
+                "unit",
+            },
+        )
+
+    def test_public_detail_returns_only_marketplace_fields(self):
+        listing = self.create_listing(title="Public listing")
+        ListingService.publish_listing(listing)
+        self.client.force_authenticate(user=None)
+
+        response = self.client.get(
+            reverse(
+                "listings:listing-public-detail",
+                kwargs={"listing_id": listing.pk},
+            )
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            set(response.data),
+            {
+                "id",
+                "title",
+                "description",
+                "rent_amount",
+                "deposit_amount",
+                "available_date",
+                "status",
+                "unit",
+            },
+        )
+        self.assertEqual(
+            set(response.data["unit"]),
+            {
+                "unit_number",
+                "floor",
+                "bedrooms",
+                "bathrooms",
+                "square_meters",
+                "property",
+            },
+        )
+        self.assertEqual(
+            set(response.data["unit"]["property"]),
+            {"name", "address", "city", "country"},
+        )
+        self.assertEqual(response.data["status"], ListingStatus.PUBLISHED)
+
+    def test_public_detail_hides_unpublished_or_inactive_property_listings(self):
+        draft = self.create_listing(title="Draft listing")
+        self.client.force_authenticate(user=None)
+        draft_response = self.client.get(
+            reverse(
+                "listings:listing-public-detail",
+                kwargs={"listing_id": draft.pk},
+            )
+        )
+        self.assertEqual(draft_response.status_code, status.HTTP_404_NOT_FOUND)
+
+        ListingService.publish_listing(draft)
+        self.property.status = PropertyStatus.INACTIVE
+        self.property.save(update_fields=["status", "updated_at"])
+        inactive_property_response = self.client.get(
+            reverse(
+                "listings:listing-public-detail",
+                kwargs={"listing_id": draft.pk},
+            )
+        )
+        self.assertEqual(
+            inactive_property_response.status_code,
+            status.HTTP_404_NOT_FOUND,
+        )

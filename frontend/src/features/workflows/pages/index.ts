@@ -4,6 +4,5 @@ export { LeasesPage } from "./LeasesPage";
 export { ListingsPage } from "./ListingsPage";
 export { MaintenancePage } from "./MaintenancePage";
 export { PropertiesPage } from "./PropertiesPage";
-export { PublicListingsPage } from "./PublicListingsPage";
 export { RenewalsPage } from "./RenewalsPage";
 export { UnitsPage } from "./UnitsPage";

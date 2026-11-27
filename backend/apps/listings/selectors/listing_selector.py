@@ -14,24 +14,18 @@ from ..models import Listing, ListingImage
 class ListingSelector:
     @staticmethod
     def get_queryset(*, user: User | None = None, public: bool = False) -> QuerySet[Listing]:
-        queryset = Listing.objects.select_related(
-            "unit",
-            "unit__property",
-            "unit__property__owner",
-        ).prefetch_related("images")
+        queryset = Listing.objects.select_related("unit", "unit__property")
         if public:
             return queryset.filter(
                 status=ListingStatus.PUBLISHED,
-                unit__property__status__in=[
-                    value
-                    for value, _ in PropertyStatus.choices
-                    if value != PropertyStatus.ARCHIVED
-                ],
+                unit__property__status=PropertyStatus.ACTIVE,
             )
         if user is None:
             return queryset.none()
-        return queryset.filter(
-            unit__property__in=PropertySelector.get_queryset(user)
+        return (
+            queryset.select_related("unit__property__owner")
+            .prefetch_related("images")
+            .filter(unit__property__in=PropertySelector.get_queryset(user))
         )
 
     @staticmethod

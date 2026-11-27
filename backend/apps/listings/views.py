@@ -1,6 +1,8 @@
 from django.db.models import QuerySet
+from django.shortcuts import get_object_or_404
 from rest_framework import mixins, serializers, viewsets
 from rest_framework.decorators import action
+from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import AllowAny
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -11,8 +13,26 @@ from common.constants import ListingStatus
 from .models import ListingImage
 from .permissions import CanManageListings
 from .selectors.listing_selector import ListingSelector
-from .serializers import ListingDetailSerializer, ListingImageSerializer, ListingSerializer
+from .serializers import (
+    ListingDetailSerializer,
+    ListingImageSerializer,
+    ListingSerializer,
+    PublicListingDetailSerializer,
+)
 from .services.listing_service import ListingService
+
+
+class PublicListingDetailView(GenericAPIView):
+    authentication_classes = ()
+    permission_classes = (AllowAny,)
+    serializer_class = PublicListingDetailSerializer
+
+    def get(self, request: Request, listing_id: str) -> Response:
+        listing = get_object_or_404(
+            ListingSelector.get_queryset(public=True),
+            pk=listing_id,
+        )
+        return Response(self.get_serializer(listing).data)
 
 
 class ListingViewSet(
@@ -41,7 +61,9 @@ class ListingViewSet(
         )
 
     def get_serializer_class(self) -> type[serializers.BaseSerializer]:
-        if self.action in ("retrieve", "public"):
+        if self.action == "public":
+            return PublicListingDetailSerializer
+        if self.action == "retrieve":
             return ListingDetailSerializer
         return ListingSerializer
 

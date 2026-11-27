@@ -11,6 +11,14 @@ import {
 import { AuthProvider } from "./app/AuthProvider";
 import { ToastProvider } from "./components/feedback/ToastProvider";
 import { AppShell } from "./layouts/AppShell";
+import { MarketplaceLayout } from "./features/marketplace/components/MarketplaceLayout";
+import {
+  ApplicationSuccessPage,
+  HomePage,
+  PublicApplicationPage,
+  PublicListingDetailsPage,
+  PublicListingsPage,
+} from "./features/marketplace/pages";
 import { DashboardRoute } from "./features/dashboard/routes/DashboardRoute";
 import {
   PropertyDetailsPage,
@@ -50,6 +58,7 @@ import {
   MaintenanceDetailsPage,
   MaintenanceListPage,
 } from "./features/maintenance/pages";
+import { NotificationListPage } from "./features/notifications/pages";
 import {
   ApplicationsPage,
   FinancePage,
@@ -57,17 +66,18 @@ import {
   ListingsPage,
   MaintenancePage,
   PropertiesPage,
-  PublicListingsPage,
   RenewalsPage,
   UnitsPage,
 } from "./features/workflows/pages";
 import { LoginPage } from "./pages/LoginPage";
+import { TenantPasswordSetupPage } from "./pages/TenantPasswordSetupPage";
 import { UnauthorizedPage } from "./pages/UnauthorizedPage";
 import {
   AuthenticatedRoute,
   GuestRoute,
   RoleRoute,
 } from "./routes";
+import { useAuth } from "./hooks/useAuth";
 import { USER_ROLES } from "./types/auth";
 import type { UserRole } from "./types/auth";
 
@@ -117,6 +127,25 @@ function WorkflowRoute({
   );
 }
 
+function ListingsRoute({ details = false }: { details?: boolean }) {
+  const { user } = useAuth();
+
+  const isManager = user?.role === "OWNER" || user?.role === "PROPERTY_MANAGER";
+  if (isManager) {
+    return (
+      <AppShell>
+        {details ? <ListingDetailsPage /> : <ListingListPage />}
+      </AppShell>
+    );
+  }
+
+  return (
+    <MarketplaceLayout>
+      {details ? <PublicListingDetailsPage /> : <PublicListingsPage />}
+    </MarketplaceLayout>
+  );
+}
+
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
@@ -137,7 +166,27 @@ export default function App() {
                 </GuestRoute>
               }
             />
+            <Route
+              path="/set-password"
+              element={<TenantPasswordSetupPage />}
+            />
             <Route path="/unauthorized" element={<UnauthorizedPage />} />
+            <Route
+              path="/applications/success"
+              element={
+                <MarketplaceLayout>
+                  <ApplicationSuccessPage />
+                </MarketplaceLayout>
+              }
+            />
+            <Route
+              path="/listings/:listingId/apply"
+              element={
+                <MarketplaceLayout>
+                  <PublicApplicationPage />
+                </MarketplaceLayout>
+              }
+            />
             <Route
               path="/dashboard"
               element={
@@ -148,6 +197,14 @@ export default function App() {
                     </AppShell>
                   </RoleRoute>
                 </AuthenticatedRoute>
+              }
+            />
+            <Route
+              path="/notifications"
+              element={
+                <WorkflowRoute allowedRoles={USER_ROLES}>
+                  <NotificationListPage />
+                </WorkflowRoute>
               }
             />
             <Route
@@ -184,19 +241,11 @@ export default function App() {
             />
             <Route
               path="/listings"
-              element={
-                <WorkflowRoute allowedRoles={MANAGEMENT_ROLES}>
-                  <ListingListPage />
-                </WorkflowRoute>
-              }
+              element={<ListingsRoute />}
             />
             <Route
               path="/listings/:listingId"
-              element={
-                <WorkflowRoute allowedRoles={MANAGEMENT_ROLES}>
-                  <ListingDetailsPage />
-                </WorkflowRoute>
-              }
+              element={<ListingsRoute details />}
             />
             <Route
               path="/applications"
@@ -396,19 +445,19 @@ export default function App() {
                     </WorkflowRoute>
                   }
                 />
-                <Route
-                  path="/internal/workflows/available-listings"
-                  element={<PublicListingsPage />}
-                />
               </>
             )}
             <Route
               path="/"
-              element={<Navigate to="/dashboard" replace />}
+              element={
+                <MarketplaceLayout>
+                  <HomePage />
+                </MarketplaceLayout>
+              }
             />
             <Route
               path="*"
-              element={<Navigate to="/dashboard" replace />}
+              element={<Navigate to="/" replace />}
             />
           </Routes>
         </AuthProvider>

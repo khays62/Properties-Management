@@ -1,5 +1,10 @@
 import { useMemo, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import {
+  Link,
+  useLocation,
+  useNavigate,
+  useSearchParams,
+} from "react-router-dom";
 
 import {
   DataTable,
@@ -39,6 +44,7 @@ export function PropertyListPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
   const isOwner = user?.role === "OWNER";
   const [createOpen, setCreateOpen] = useState(false);
   const [editingProperty, setEditingProperty] = useState<Property | null>(null);
@@ -48,11 +54,19 @@ export function PropertyListPage() {
   const [archivingProperty, setArchivingProperty] = useState<Property | null>(
     null,
   );
-  const [searchValue, setSearchValue] = useState("");
-  const [search, setSearch] = useState("");
-  const [status, setStatus] = useState<PropertyStatus | "">("");
-  const [city, setCity] = useState("");
-  const [page, setPage] = useState(1);
+  const search = searchParams.get("search") ?? "";
+  const rawStatus = searchParams.get("status") ?? "";
+  const status = isPropertyStatus(rawStatus) ? rawStatus : "";
+  const city = searchParams.get("city") ?? "";
+  const requestedPage = Number(searchParams.get("page") ?? 1);
+  const page =
+    Number.isInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1;
+  const [searchDraft, setSearchDraft] = useState({
+    sourceSearch: search,
+    value: search,
+  });
+  const searchValue =
+    searchDraft.sourceSearch === search ? searchDraft.value : search;
 
   const query = useProperties({
     search: search || undefined,
@@ -149,21 +163,33 @@ export function PropertyListPage() {
     [isOwner, location.pathname, location.search, navigate],
   );
 
+  function updateQueryParameter(name: string, value: string) {
+    setSearchParams(
+      (current) => {
+        const next = new URLSearchParams(current);
+        if (value) next.set(name, value);
+        else next.delete(name);
+        if (name !== "page") next.delete("page");
+        return next;
+      },
+      { replace: true },
+    );
+  }
+
   function resetFilters() {
-    setSearchValue("");
-    setSearch("");
-    setStatus("");
-    setCity("");
-    setPage(1);
+    setSearchDraft({ sourceSearch: "", value: "" });
+    setSearchParams({}, { replace: true });
   }
 
   function handleFilterChange(filterId: string, value: string) {
     if (filterId === "status") {
-      setStatus(isPropertyStatus(value) ? value : "");
+      updateQueryParameter(
+        "status",
+        isPropertyStatus(value) ? value : "",
+      );
     } else if (filterId === "city") {
-      setCity(value);
+      updateQueryParameter("city", value.trim());
     }
-    setPage(1);
   }
 
   return (
@@ -180,11 +206,10 @@ export function PropertyListPage() {
 
       <SearchFilterBar
         searchValue={searchValue}
-        onSearchValueChange={setSearchValue}
-        onSearch={(value) => {
-          setSearch(value.trim());
-          setPage(1);
-        }}
+        onSearchValueChange={(value) =>
+          setSearchDraft({ sourceSearch: search, value })
+        }
+        onSearch={(value) => updateQueryParameter("search", value.trim())}
         searchLabel="Search properties"
         filters={filters}
         onFilterChange={handleFilterChange}
@@ -215,7 +240,9 @@ export function PropertyListPage() {
             page={page}
             pageSize={PAGE_SIZE}
             totalItems={query.data?.count ?? 0}
-            onPageChange={setPage}
+            onPageChange={(nextPage) =>
+              updateQueryParameter("page", String(nextPage))
+            }
           />
         </>
       )}
@@ -235,7 +262,7 @@ export function PropertyListPage() {
         onSaved={(message) => toastService.success(message)}
         onArchived={() => {
           setArchivingProperty(null);
-          setPage(1);
+          updateQueryParameter("page", "");
         }}
       />
     </div>

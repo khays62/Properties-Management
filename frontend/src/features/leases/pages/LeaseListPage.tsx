@@ -249,6 +249,7 @@ export function LeaseListPage() {
         render: (lease) => (
           <LeaseActionsMenu
             lease={lease}
+            canManageActions={canManageLeases}
             onView={() =>
               navigate(`/leases/${lease.id}`, {
                 state: { returnTo: `${location.pathname}${location.search}` },
@@ -262,7 +263,14 @@ export function LeaseListPage() {
         ),
       },
     ],
-    [location.pathname, location.search, navigate, propertyById, unitById],
+    [
+      canManageLeases,
+      location.pathname,
+      location.search,
+      navigate,
+      propertyById,
+      unitById,
+    ],
   );
 
   function updateQueryParameter(name: string, value: string) {

@@ -9,6 +9,7 @@ import { AppLogo } from "../layouts/AppLogo";
 import { Button } from "../components/ui/Button";
 import { Card } from "../components/ui/Card";
 import { Input } from "../components/ui/Input";
+import { usePageMetadata } from "../hooks/usePageMetadata";
 import { getSafeRedirectPath } from "../routes/routeState";
 import { getAuthErrorMessage } from "../services/auth.api";
 import type { LoginCredentials } from "../types/auth";
@@ -23,6 +24,15 @@ export function LoginPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const passwordSetupSuccess =
+    typeof location.state === "object" &&
+    location.state !== null &&
+    "passwordSetupSuccess" in location.state &&
+    location.state.passwordSetupSuccess === true;
+  usePageMetadata(
+    "Sign in | OmniProperties",
+    "Sign in to your OmniProperties account.",
+  );
   const {
     formState: { errors, isSubmitting },
     handleSubmit,
@@ -67,6 +77,14 @@ export function LoginPage() {
               className="rounded-md border border-danger bg-card px-3 py-2 text-sm text-danger"
             >
               {submitError ?? authError}
+            </p>
+          )}
+          {passwordSetupSuccess && (
+            <p
+              role="status"
+              className="rounded-md border border-success bg-card px-3 py-2 text-sm text-success"
+            >
+              Password set successfully. You can now sign in.
             </p>
           )}
 

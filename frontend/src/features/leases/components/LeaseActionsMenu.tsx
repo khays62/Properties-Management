@@ -17,6 +17,7 @@ const ACTION_LABELS: Record<LeaseAction, string> = {
 export interface LeaseActionsMenuProps {
   lease: LeaseDetails;
   onView?: () => void;
+  canManageActions?: boolean;
   onAction: (action: LeaseAction) => void;
 }
 
@@ -24,13 +25,17 @@ export function LeaseActionsMenu({
   lease,
   onAction,
   onView,
+  canManageActions = true,
 }: LeaseActionsMenuProps) {
-  const actionItems: ActionDropdownItem[] = getLeaseAvailableActions(lease).map((action) => ({
-    id: action,
-    label: ACTION_LABELS[action],
-    onSelect: () => onAction(action),
-    variant: action === "terminate" || action === "expire" ? "danger" : "ghost",
-  }));
+  const actionItems: ActionDropdownItem[] = canManageActions
+    ? getLeaseAvailableActions(lease).map((action) => ({
+        id: action,
+        label: ACTION_LABELS[action],
+        onSelect: () => onAction(action),
+        variant:
+          action === "terminate" || action === "expire" ? "danger" : "ghost",
+      }))
+    : [];
   const items = [
     ...(onView
       ? [

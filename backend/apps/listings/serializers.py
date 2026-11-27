@@ -1,5 +1,7 @@
 from rest_framework import serializers
 
+from apps.properties.models import Property, Unit
+
 from .models import (
     MAX_LISTING_IMAGE_SIZE_BYTES,
     Listing,
@@ -61,3 +63,41 @@ class ListingDetailSerializer(ListingSerializer):
 
     class Meta(ListingSerializer.Meta):
         fields = ListingSerializer.Meta.fields + ("images",)
+
+
+class PublicListingPropertySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Property
+        fields = ("name", "address", "city", "country")
+
+
+class PublicListingUnitSerializer(serializers.ModelSerializer):
+    property = PublicListingPropertySerializer(read_only=True)
+
+    class Meta:
+        model = Unit
+        fields = (
+            "unit_number",
+            "floor",
+            "bedrooms",
+            "bathrooms",
+            "square_meters",
+            "property",
+        )
+
+
+class PublicListingDetailSerializer(serializers.ModelSerializer):
+    unit = PublicListingUnitSerializer(read_only=True)
+
+    class Meta:
+        model = Listing
+        fields = (
+            "id",
+            "title",
+            "description",
+            "rent_amount",
+            "deposit_amount",
+            "available_date",
+            "status",
+            "unit",
+        )

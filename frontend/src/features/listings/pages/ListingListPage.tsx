@@ -1,5 +1,10 @@
 import { useMemo, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import {
+  Link,
+  useLocation,
+  useNavigate,
+  useSearchParams,
+} from "react-router-dom";
 
 import {
   DataTable,
@@ -56,15 +61,24 @@ function formatAvailableDate(value: string): string {
 export function ListingListPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [createOpen, setCreateOpen] = useState(false);
   const [editingListing, setEditingListing] = useState<Listing | null>(null);
-  const [searchValue, setSearchValue] = useState("");
-  const [search, setSearch] = useState("");
-  const [status, setStatus] = useState<ListingStatus | "">("");
-  const [propertyId, setPropertyId] = useState("");
-  const [city, setCity] = useState("");
-  const [availableDate, setAvailableDate] = useState("");
-  const [page, setPage] = useState(1);
+  const search = searchParams.get("search") ?? "";
+  const rawStatus = searchParams.get("status") ?? "";
+  const status = isListingStatus(rawStatus) ? rawStatus : "";
+  const propertyId = searchParams.get("property") ?? "";
+  const city = searchParams.get("city") ?? "";
+  const availableDate = searchParams.get("available_date") ?? "";
+  const requestedPage = Number(searchParams.get("page") ?? 1);
+  const page =
+    Number.isInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1;
+  const [searchDraft, setSearchDraft] = useState({
+    sourceSearch: search,
+    value: search,
+  });
+  const searchValue =
+    searchDraft.sourceSearch === search ? searchDraft.value : search;
 
   const propertiesQuery = useListingProperties();
   const properties = propertiesQuery.data ?? [];
@@ -173,24 +187,37 @@ export function ListingListPage() {
     [location.pathname, location.search, navigate],
   );
 
+  function updateQueryParameter(name: string, value: string) {
+    setSearchParams(
+      (current) => {
+        const next = new URLSearchParams(current);
+        if (value) next.set(name, value);
+        else next.delete(name);
+        if (name !== "page") next.delete("page");
+        return next;
+      },
+      { replace: true },
+    );
+  }
+
   function resetFilters() {
-    setSearchValue("");
-    setSearch("");
-    setStatus("");
-    setPropertyId("");
-    setCity("");
-    setAvailableDate("");
-    setPage(1);
+    setSearchDraft({ sourceSearch: "", value: "" });
+    setSearchParams({}, { replace: true });
   }
 
   function handleFilterChange(filterId: string, value: string) {
-    if (filterId === "property") setPropertyId(value);
-    if (filterId === "status") {
-      setStatus(isListingStatus(value) ? value : "");
+    if (filterId === "property") {
+      updateQueryParameter("property", value);
+    } else if (filterId === "status") {
+      updateQueryParameter(
+        "status",
+        isListingStatus(value) ? value : "",
+      );
+    } else if (filterId === "city") {
+      updateQueryParameter("city", value.trim());
+    } else if (filterId === "available_date") {
+      updateQueryParameter("available_date", value);
     }
-    if (filterId === "city") setCity(value);
-    if (filterId === "available_date") setAvailableDate(value);
-    setPage(1);
   }
 
   return (
@@ -203,11 +230,10 @@ export function ListingListPage() {
 
       <SearchFilterBar
         searchValue={searchValue}
-        onSearchValueChange={setSearchValue}
-        onSearch={(value) => {
-          setSearch(value.trim());
-          setPage(1);
-        }}
+        onSearchValueChange={(value) =>
+          setSearchDraft({ sourceSearch: search, value })
+        }
+        onSearch={(value) => updateQueryParameter("search", value.trim())}
         searchLabel="Search listings"
         filters={filters}
         onFilterChange={handleFilterChange}
@@ -245,7 +271,9 @@ export function ListingListPage() {
             page={page}
             pageSize={PAGE_SIZE}
             totalItems={query.data?.count ?? 0}
-            onPageChange={setPage}
+            onPageChange={(nextPage) =>
+              updateQueryParameter("page", String(nextPage))
+            }
           />
         </>
       )}

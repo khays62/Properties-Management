@@ -41,10 +41,18 @@ export function UnitListPage() {
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const propertyId = searchParams.get("property") ?? "";
-  const [searchValue, setSearchValue] = useState("");
-  const [search, setSearch] = useState("");
-  const [status, setStatus] = useState<UnitStatus | "">("");
-  const [page, setPage] = useState(1);
+  const search = searchParams.get("search") ?? "";
+  const rawStatus = searchParams.get("status") ?? "";
+  const status = isUnitStatus(rawStatus) ? rawStatus : "";
+  const requestedPage = Number(searchParams.get("page") ?? 1);
+  const page =
+    Number.isInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1;
+  const [searchDraft, setSearchDraft] = useState({
+    sourceSearch: search,
+    value: search,
+  });
+  const searchValue =
+    searchDraft.sourceSearch === search ? searchDraft.value : search;
   const [createOpen, setCreateOpen] = useState(false);
   const [editingUnit, setEditingUnit] = useState<Unit | null>(null);
 
@@ -155,28 +163,29 @@ export function UnitListPage() {
     [location.pathname, location.search, propertyNames],
   );
 
+  function updateQueryParameter(name: string, value: string) {
+    setSearchParams(
+      (current) => {
+        const next = new URLSearchParams(current);
+        if (value) next.set(name, value);
+        else next.delete(name);
+        if (name !== "page") next.delete("page");
+        return next;
+      },
+      { replace: true },
+    );
+  }
+
   function resetFilters() {
     setSearchParams({}, { replace: true });
-    setSearchValue("");
-    setSearch("");
-    setStatus("");
-    setPage(1);
+    setSearchDraft({ sourceSearch: "", value: "" });
   }
 
   function handleFilterChange(filterId: string, value: string) {
-    if (filterId === "property") {
-      setSearchParams(
-        (current) => {
-          if (value) current.set("property", value);
-          else current.delete("property");
-          return current;
-        },
-        { replace: true },
-      );
-    } else if (filterId === "status") {
-      setStatus(isUnitStatus(value) ? value : "");
+    if (filterId === "property") updateQueryParameter("property", value);
+    else if (filterId === "status") {
+      updateQueryParameter("status", isUnitStatus(value) ? value : "");
     }
-    setPage(1);
   }
 
   return (
@@ -201,11 +210,10 @@ export function UnitListPage() {
 
       <SearchFilterBar
         searchValue={searchValue}
-        onSearchValueChange={setSearchValue}
-        onSearch={(value) => {
-          setSearch(value.trim());
-          setPage(1);
-        }}
+        onSearchValueChange={(value) =>
+          setSearchDraft({ sourceSearch: search, value })
+        }
+        onSearch={(value) => updateQueryParameter("search", value.trim())}
         searchLabel="Search units"
         filters={filters}
         onFilterChange={handleFilterChange}
@@ -242,7 +250,9 @@ export function UnitListPage() {
             page={page}
             pageSize={PAGE_SIZE}
             totalItems={unitsQuery.data?.count ?? 0}
-            onPageChange={setPage}
+            onPageChange={(nextPage) =>
+              updateQueryParameter("page", String(nextPage))
+            }
           />
         </>
       )}

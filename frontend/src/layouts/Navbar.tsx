@@ -10,6 +10,7 @@ import { useNavigate } from "react-router-dom";
 
 import { useAuth } from "../hooks/useAuth";
 import { Button } from "../components/ui/Button";
+import { NotificationBell } from "../features/notifications/components";
 import { AppLogo } from "./AppLogo";
 
 export interface NavbarProps {
@@ -131,26 +132,7 @@ export function Navbar({
       </div>
 
       <div className="flex items-center gap-3 sm:gap-5">
-        <div
-          role="img"
-          aria-label="Notifications placeholder"
-          className="grid h-10 w-10 place-items-center rounded-full text-text-secondary"
-        >
-          <svg
-            aria-hidden="true"
-            className="h-5 w-5"
-            fill="none"
-            viewBox="0 0 20 20"
-          >
-            <path
-              d="M15 7a5 5 0 0 0-10 0c0 5-2 5-2 6.5h14C17 12 15 12 15 7Zm-7 9h4"
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="1.5"
-            />
-          </svg>
-        </div>
+        <NotificationBell />
         <div ref={profileAreaRef} className="relative">
           <button
             ref={profileButtonRef}

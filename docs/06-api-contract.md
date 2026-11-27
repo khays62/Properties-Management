@@ -1,5 +1,18 @@
 # 06 - API Contract
 
+## Public listings
+
+`GET /api/v1/listings/public/` is anonymous and returns published listings for
+active properties. Supported filters are `search`, `city`, and
+`available_date` (`YYYY-MM-DD`); results use the standard paginated response.
+
+`GET /api/v1/listings/public/{id}/` is anonymous and returns one published
+listing only when its property is active. The response is limited to the public
+marketplace fields: listing ID, title, description, rent, deposit, availability
+date, published status, unit number/floor/bedroom/bathroom/area, and property
+name/address/city/country. It does not expose listing management timestamps,
+expiry data, owner details, or internal workflow records.
+
 ## Applications
 
 `POST /api/v1/applications/` accepts anonymous submissions:
@@ -46,7 +59,7 @@ Pass/fail requests may include `score` (0-100), `notes`, and the `income_verifie
 
 ## Leases and tenants
 
-Lease creation requires an approved application with a passed screening and is restricted to the owner or assigned property manager for the related property. A newly provisioned tenant account receives a one-time password setup link. `POST /api/v1/auth/tenant-password-setup/` accepts `uid`, `token`, and `new_password`.
+Lease creation requires an approved application with a passed screening and is restricted to the owner or assigned property manager for the related property. A newly provisioned tenant account receives a one-time password setup link to `/set-password/?uid=...&token=...`. `POST /api/v1/auth/tenant-password-setup/` accepts `uid`, `token`, and `new_password`.
 
 Lease list filters are `status`, `tenant`, `property`, `unit`, `start_date`, `end_date`, and `search`. Owners and assigned property managers see leases for their properties; tenant users can only read their own leases.
 

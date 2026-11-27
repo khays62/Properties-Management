@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 
-import { Button } from "../../../components/ui/Button";
 import { fetchWorkflowRecords, createWorkflowRecord, postWorkflowAction, toOptions, getRecordText, type WorkflowRecord } from "../api";
 import { WorkflowAction } from "../components/WorkflowAction";
 import { WorkflowForm } from "../components/WorkflowForm";
@@ -49,14 +48,9 @@ export function ListingsPage() {
       title="Listings"
       subtitle="Create rental listings, publish vacancies, and manage availability."
     >
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-text-secondary">
-          Prospective tenants can browse currently published listings.
-        </p>
-        <Button onClick={() => window.location.assign("/available-listings")}>
-          View public listings
-        </Button>
-      </div>
+      <p className="text-sm text-text-secondary">
+        Prospective tenants can browse currently published listings.
+      </p>
       <WorkflowForm
         title="Create listing"
         fields={[
