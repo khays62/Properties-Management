@@ -9,7 +9,7 @@ from django.utils import timezone
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from apps.accounts.models import PropertyAssignment, User
+from apps.accounts.models import PropertyAssignment, TeamMembership, User
 from apps.applications.models import Applicant, RentalApplication, Screening
 from apps.audit.models import AuditLog
 from apps.leases.models import Lease, Tenant
@@ -687,6 +687,7 @@ class FinanceApiTests(APITestCase):
             property_id=self.property.pk,
             manager=manager,
         )
+        TeamMembership.objects.create(owner=self.owner, user=manager)
         accountant = User.objects.create_user(
             email="finance-accountant@example.com",
             password="test-password",

@@ -5,7 +5,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
 
-from common.constants import UserRole
+from common.constants import TeamInvitationStatus, UserRole
 from common.models import BaseModel
 
 from .managers import UserManager
@@ -66,6 +66,7 @@ class PropertyAssignment(BaseModel):
     )
     assigned_date = models.DateField(default=timezone.localdate)
     is_active = models.BooleanField(default=True)
+    suspended_by_membership = models.BooleanField(default=False)
 
     class Meta:
         ordering = ["-assigned_date"]
@@ -89,3 +90,121 @@ class PropertyAssignment(BaseModel):
 
     def __str__(self) -> str:
         return f"{self.property_id} managed by {self.manager.email}"
+
+
+class TeamMembership(BaseModel):
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="owned_team_memberships",
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="team_memberships",
+    )
+    is_active = models.BooleanField(default=True)
+    deactivated_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["user__email"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["owner", "user"],
+                name="tm_owner_user_uniq",
+            ),
+        ]
+        indexes = [
+            models.Index(
+                fields=["owner", "is_active"],
+                name="tm_owner_active_idx",
+            ),
+            models.Index(
+                fields=["user", "is_active"],
+                name="tm_user_active_idx",
+            ),
+        ]
+
+    def clean(self) -> None:
+        super().clean()
+        errors = {}
+        if self.owner_id and self.owner.role != UserRole.OWNER:
+            errors["owner"] = "Team membership owner must have the Owner role."
+        if self.user_id and self.user.role not in (
+            UserRole.PROPERTY_MANAGER,
+            UserRole.ACCOUNTANT,
+        ):
+            errors["user"] = (
+                "Team members must be Property Managers or Accountants."
+            )
+        if self.owner_id and self.owner_id == self.user_id:
+            errors["user"] = "An Owner cannot be a member of their own team."
+        if errors:
+            raise ValidationError(errors)
+
+    def __str__(self) -> str:
+        return f"{self.user.email} in {self.owner.email}'s team"
+
+
+class TeamInvitation(BaseModel):
+    email = models.EmailField()
+    role = models.CharField(max_length=32, choices=UserRole.choices)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="team_invitations",
+    )
+    invited_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="team_invitations_sent",
+    )
+    status = models.CharField(
+        max_length=16,
+        choices=TeamInvitationStatus.choices,
+        default=TeamInvitationStatus.PENDING,
+    )
+    token_hash = models.CharField(max_length=64, unique=True, null=True, blank=True)
+    expires_at = models.DateTimeField(null=True, blank=True)
+    accepted_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        constraints = [
+            models.CheckConstraint(
+                condition=models.Q(
+                    role__in=(UserRole.PROPERTY_MANAGER, UserRole.ACCOUNTANT)
+                ),
+                name="team_invite_role_allowed",
+            ),
+            models.UniqueConstraint(
+                fields=["invited_by", "user"],
+                condition=models.Q(status=TeamInvitationStatus.PENDING),
+                name="tm_inv_owner_user_pend_uniq",
+            ),
+        ]
+        indexes = [
+            models.Index(
+                fields=["invited_by", "status", "created_at"],
+                name="team_invite_owner_status_idx",
+            ),
+            models.Index(
+                fields=["email", "status"],
+                name="team_invite_email_status_idx",
+            ),
+        ]
+
+    def clean(self) -> None:
+        super().clean()
+        errors = {}
+        if self.invited_by_id and self.invited_by.role != UserRole.OWNER:
+            errors["invited_by"] = "Only an Owner can invite team members."
+        if self.user_id and self.user.role != self.role:
+            errors["user"] = "Invitation role must match the invited user's role."
+        if self.user_id and self.email.casefold() != self.user.email.casefold():
+            errors["email"] = "Invitation email must match the invited user's email."
+        if errors:
+            raise ValidationError(errors)
+
+    def __str__(self) -> str:
+        return f"{self.email} ({self.status})"

@@ -10,7 +10,7 @@ from django.utils import timezone
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from apps.accounts.models import PropertyAssignment, User
+from apps.accounts.models import PropertyAssignment, TeamMembership, User
 from apps.applications.models import Applicant, RentalApplication, Screening
 from apps.audit.models import AuditLog
 from apps.listings.services.listing_service import ListingService
@@ -516,6 +516,7 @@ class LeaseWorkflowTests(APITestCase):
             property_id=self.property.pk,
             manager=manager,
         )
+        TeamMembership.objects.create(owner=self.owner, user=manager)
         self.client.force_authenticate(manager)
 
         response = self.client.get(

@@ -1,7 +1,6 @@
 from django.db.models import Count, Q, QuerySet
 
-from apps.accounts.models import PropertyAssignment
-from apps.accounts.models import User
+from apps.accounts.models import PropertyAssignment, TeamMembership, User
 from common.constants import PropertyStatus, UserRole
 from common.permissions import has_role
 
@@ -18,8 +17,13 @@ class PropertySelector:
                 manager=user,
                 is_active=True,
             ).values("property_id")
+            active_owner_ids = TeamMembership.objects.filter(
+                user=user,
+                is_active=True,
+            ).values("owner_id")
             return Property.objects.filter(
-                id__in=assigned_property_ids
+                id__in=assigned_property_ids,
+                owner_id__in=active_owner_ids,
             ).select_related("owner")
         return Property.objects.none()
 
@@ -28,11 +32,18 @@ class PropertySelector:
         if has_role(user, (UserRole.OWNER,)):
             return property_obj.owner_id == user.pk
         if has_role(user, (UserRole.PROPERTY_MANAGER,)):
-            return PropertyAssignment.objects.filter(
-                property_id=property_obj.pk,
-                manager=user,
-                is_active=True,
-            ).exists()
+            return (
+                TeamMembership.objects.filter(
+                    owner_id=property_obj.owner_id,
+                    user=user,
+                    is_active=True,
+                ).exists()
+                and PropertyAssignment.objects.filter(
+                    property_id=property_obj.pk,
+                    manager=user,
+                    is_active=True,
+                ).exists()
+            )
         return False
 
     @classmethod

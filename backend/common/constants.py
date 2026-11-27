@@ -72,6 +72,13 @@ class TenantStatus(models.TextChoices):
     MOVED_OUT = "MOVED_OUT", "Moved Out"
 
 
+class TeamInvitationStatus(models.TextChoices):
+    PENDING = "PENDING", "Pending"
+    ACCEPTED = "ACCEPTED", "Accepted"
+    EXPIRED = "EXPIRED", "Expired"
+    REVOKED = "REVOKED", "Revoked"
+
+
 class RenewalAlertStatus(models.TextChoices):
     UNREAD = "UNREAD", "Unread"
     READ = "READ", "Read"

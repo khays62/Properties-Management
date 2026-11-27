@@ -8,7 +8,10 @@ from django.core.management.utils import get_random_secret_key
 from django.test import override_settings
 from django.utils import timezone
 
-from apps.accounts.models import PropertyAssignment, User
+from apps.accounts.models import User
+from apps.accounts.services.property_assignment_service import (
+    PropertyAssignmentService,
+)
 from apps.applications.models import Applicant, RentalApplication
 from apps.applications.services.application_service import ApplicationService
 from apps.applications.services.screening_service import ScreeningService
@@ -135,10 +138,10 @@ class Command(BaseCommand):
                 country=property_spec["country"],
             )
             property_obj = properties[property_spec["code"]]
-            PropertyAssignment.objects.update_or_create(
-                property_id=property_obj.pk,
-                manager=manager,
-                defaults={"assigned_date": today, "is_active": True},
+            PropertyAssignmentService.assign_manager(
+                property_obj=property_obj,
+                manager_email=manager.email,
+                assigned_by=owner,
             )
             for spec in property_spec["unit_specs"]:
                 number, floor, bedrooms, bathrooms, rent, deposit = spec

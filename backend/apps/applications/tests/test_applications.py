@@ -6,7 +6,7 @@ from django.utils import timezone
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from apps.accounts.models import PropertyAssignment, User
+from apps.accounts.models import PropertyAssignment, TeamMembership, User
 from apps.audit.models import AuditLog
 from apps.listings.services.listing_service import ListingService
 from apps.notifications.models import Notification
@@ -412,6 +412,7 @@ class ApplicationsApiTests(APITestCase):
             property_id=other_property.pk,
             manager=manager,
         )
+        TeamMembership.objects.create(owner=other_property.owner, user=manager)
         self.client.force_authenticate(manager)
         manager_response = self.client.get(
             reverse(
