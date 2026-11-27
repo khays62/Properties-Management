@@ -15,12 +15,16 @@ import type {
   ReceiptQueryParams,
   RentChargeGenerateInput,
   RentChargeQueryParams,
+  RentScheduleCreateInput,
+  RentScheduleUpdateInput,
 } from "../types/finance";
 import {
   allocatePayment,
   createDeposit,
   createPayment,
+  createRentSchedule,
   fetchAllLeaseOptions,
+  fetchAllRentSchedules,
   fetchAllRentCharges,
   fetchDeposit,
   fetchDeposits,
@@ -30,6 +34,7 @@ import {
   fetchReceipts,
   fetchRentCharge,
   fetchRentCharges,
+  fetchRentSchedules,
   forfeitDeposit,
   generateRentCharges,
   issueRentChargeInvoice,
@@ -37,6 +42,7 @@ import {
   recordDepositPayment,
   refundDeposit,
   reversePayment,
+  updateRentSchedule,
 } from "../api/finance.api";
 
 export const financeQueryKeys = {
@@ -44,6 +50,8 @@ export const financeQueryKeys = {
   deposit: (id: string) => ["finance", "deposit", id] as const,
   charges: ["finance", "charges"] as const,
   charge: (id: string) => ["finance", "charge", id] as const,
+  rentSchedules: ["finance", "rent-schedules"] as const,
+  allRentSchedules: ["finance", "rent-schedules", "all"] as const,
   payments: ["finance", "payments"] as const,
   payment: (id: string) => ["finance", "payment", id] as const,
   receipts: ["finance", "receipts"] as const,
@@ -77,6 +85,52 @@ export function useFinanceLeaseOptions(enabled = true) {
     queryKey: financeQueryKeys.leaseOptions,
     queryFn: fetchAllLeaseOptions,
     enabled,
+  });
+}
+
+export function useRentSchedules(params: FinanceListParams, enabled = true) {
+  return useQuery({
+    queryKey: [...financeQueryKeys.rentSchedules, params],
+    queryFn: () => fetchRentSchedules(params),
+    enabled,
+  });
+}
+
+export function useAllRentSchedules(enabled = true) {
+  return useQuery({
+    queryKey: financeQueryKeys.allRentSchedules,
+    queryFn: fetchAllRentSchedules,
+    enabled,
+  });
+}
+
+export function useCreateRentSchedule() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (values: RentScheduleCreateInput) => createRentSchedule(values),
+    onSuccess: () =>
+      invalidate(client, [
+        financeQueryKeys.rentSchedules,
+        financeQueryKeys.charges,
+      ]),
+  });
+}
+
+export function useUpdateRentSchedule() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      id,
+      values,
+    }: {
+      id: string;
+      values: RentScheduleUpdateInput;
+    }) => updateRentSchedule(id, values),
+    onSuccess: () =>
+      invalidate(client, [
+        financeQueryKeys.rentSchedules,
+        financeQueryKeys.charges,
+      ]),
   });
 }
 

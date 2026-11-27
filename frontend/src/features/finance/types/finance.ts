@@ -17,6 +17,8 @@ export const RENT_CHARGE_STATUSES = [
   "CANCELLED",
 ] as const;
 
+export const RENT_FREQUENCIES = ["MONTHLY"] as const;
+
 export const PAYMENT_STATUSES = [
   "PENDING",
   "COMPLETED",
@@ -58,6 +60,16 @@ export const rentChargeSchema = z.object({
   balance: amountSchema,
   due_date: z.string(),
   status: z.enum(RENT_CHARGE_STATUSES),
+  created_at: z.string(),
+  updated_at: z.string(),
+});
+
+export const rentScheduleSchema = z.object({
+  id: uuidSchema,
+  lease: uuidSchema,
+  due_day: z.number().int().min(1).max(31),
+  frequency: z.enum(RENT_FREQUENCIES),
+  is_active: z.boolean(),
   created_at: z.string(),
   updated_at: z.string(),
 });
@@ -104,10 +116,12 @@ export const issuedInvoiceSchema = z.object({
 
 export type DepositStatus = (typeof DEPOSIT_STATUSES)[number];
 export type RentChargeStatus = (typeof RENT_CHARGE_STATUSES)[number];
+export type RentFrequency = (typeof RENT_FREQUENCIES)[number];
 export type PaymentStatus = (typeof PAYMENT_STATUSES)[number];
 export type PaymentMethod = (typeof PAYMENT_METHODS)[number];
 export type Deposit = z.infer<typeof depositSchema>;
 export type RentCharge = z.infer<typeof rentChargeSchema>;
+export type RentSchedule = z.infer<typeof rentScheduleSchema>;
 export type PaymentAllocation = z.infer<typeof paymentAllocationSchema>;
 export type Payment = z.infer<typeof paymentSchema>;
 export type PaymentDetails = z.infer<typeof paymentDetailsSchema>;
@@ -158,6 +172,19 @@ export interface DepositRefundInput {
 export interface RentChargeGenerateInput {
   billing_month: number;
   billing_year: number;
+}
+
+export interface RentScheduleCreateInput {
+  lease: string;
+  due_day: number;
+  frequency: RentFrequency;
+  is_active: boolean;
+}
+
+export interface RentScheduleUpdateInput {
+  due_day: number;
+  frequency: RentFrequency;
+  is_active: boolean;
 }
 
 export interface PaymentCreateInput {

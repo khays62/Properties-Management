@@ -51,6 +51,7 @@ import {
   DepositListPage,
   PaymentDetailsPage,
   PaymentListPage,
+  RentScheduleListPage,
   ReceiptDetailsPage,
   ReceiptListPage,
 } from "./features/finance/pages";
@@ -102,6 +103,11 @@ const FINANCE_ROLES: UserRole[] = [
   "PROPERTY_MANAGER",
   "ACCOUNTANT",
   "TENANT",
+];
+const FINANCE_MANAGEMENT_ROLES: UserRole[] = [
+  "OWNER",
+  "PROPERTY_MANAGER",
+  "ACCOUNTANT",
 ];
 const MAINTENANCE_ROLES: UserRole[] = [
   "OWNER",
@@ -314,6 +320,14 @@ export default function App() {
             <Route
               path="/finance"
               element={<Navigate to="/finance/charges" replace />}
+            />
+            <Route
+              path="/finance/rent-schedules"
+              element={
+                <WorkflowRoute allowedRoles={FINANCE_MANAGEMENT_ROLES}>
+                  <RentScheduleListPage />
+                </WorkflowRoute>
+              }
             />
             <Route
               path="/finance/charges"

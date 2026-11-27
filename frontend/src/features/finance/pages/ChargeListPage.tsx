@@ -9,6 +9,7 @@ import {
   type DataTableColumn,
   type FilterDefinition,
 } from "../../../components/data";
+import { EmptyState } from "../../../components/feedback/EmptyState";
 import { ErrorState } from "../../../components/feedback/ErrorState";
 import { Button } from "../../../components/ui/Button";
 import { StatusBadge } from "../../../components/ui/StatusBadge";
@@ -17,7 +18,11 @@ import { toastService } from "../../../services/toastService";
 import { getFinanceErrorMessage } from "../api/finance.api";
 import { FinanceNavigation } from "../components/FinanceNavigation";
 import { RentChargeGenerateModal } from "../components/RentChargeGenerateModal";
-import { useGenerateRentCharges, useRentCharges } from "../hooks/useFinance";
+import {
+  useAllRentSchedules,
+  useGenerateRentCharges,
+  useRentCharges,
+} from "../hooks/useFinance";
 import {
   RENT_CHARGE_STATUSES,
   type RentCharge,
@@ -83,6 +88,7 @@ export function ChargeListPage() {
     page,
   };
   const chargesQuery = useRentCharges(params);
+  const schedulesQuery = useAllRentSchedules(canManage);
   const generateMutation = useGenerateRentCharges();
   const [generateOpen, setGenerateOpen] = useState(false);
 
@@ -240,6 +246,29 @@ export function ChargeListPage() {
         onFilterChange={(id, value) => updateParam(id, value)}
         onReset={resetFilters}
       />
+      {schedulesQuery.isError && (
+        <ErrorState
+          title="Unable to check rent schedules"
+          description={getFinanceErrorMessage(schedulesQuery.error)}
+          onRetry={() => void schedulesQuery.refetch()}
+        />
+      )}
+      {canManage &&
+        schedulesQuery.isSuccess &&
+        !schedulesQuery.data.some((schedule) => schedule.is_active) && (
+          <EmptyState
+            title="No active rent schedules"
+            description="Create a rent schedule first before generating rent charges."
+            action={
+              <Link
+                to="/finance/rent-schedules"
+                className="op-button op-button--primary op-button--md"
+              >
+                Manage rent schedules
+              </Link>
+            }
+          />
+        )}
       {chargesQuery.isError ? (
         <ErrorState
           title="Unable to load rent charges"

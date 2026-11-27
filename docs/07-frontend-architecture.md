@@ -31,3 +31,14 @@ The UI updates document title and description client-side. Production Nginx
 must serve client-side routes through the SPA entry point (for example,
 `try_files $uri $uri/ /index.html;`) for direct navigation and refreshes.
 Server-side rendering or pre-rendering is not configured.
+
+## Finance
+
+The finance area exposes charges, rent schedules, deposits, payments, and
+receipts. `/finance/rent-schedules` is available to owners, property managers,
+and accountants; tenant users cannot read or manage rent schedules.
+
+Schedules are monthly, one per lease, and use the lease's payment due day.
+Create a schedule for an active or expiring lease before generating its rent
+charges. The rent-charge page links to schedule management when no active
+schedules are available.

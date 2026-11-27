@@ -1,17 +1,35 @@
 import { NavLink } from "react-router-dom";
 
-const SECTIONS = [
+import { useAuth } from "../../../hooks/useAuth";
+
+interface FinanceSection {
+  to: string;
+  label: string;
+  managerOnly?: boolean;
+}
+
+const SECTIONS: FinanceSection[] = [
   { to: "/finance/charges", label: "Charges" },
+  { to: "/finance/rent-schedules", label: "Rent Schedules", managerOnly: true },
   { to: "/finance/deposits", label: "Deposits" },
   { to: "/finance/payments", label: "Payments" },
   { to: "/finance/receipts", label: "Receipts" },
-] as const;
+];
 
 export function FinanceNavigation() {
+  const { user } = useAuth();
+  const canManageSchedules = [
+    "OWNER",
+    "PROPERTY_MANAGER",
+    "ACCOUNTANT",
+  ].includes(user?.role ?? "");
+
   return (
     <nav aria-label="Finance sections" className="border-b border-[var(--color-border)]">
       <ul className="flex flex-wrap gap-2">
-        {SECTIONS.map((section) => (
+        {SECTIONS.filter(
+          (section) => !section.managerOnly || canManageSchedules,
+        ).map((section) => (
           <li key={section.to}>
             <NavLink
               to={section.to}

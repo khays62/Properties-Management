@@ -9,6 +9,7 @@ import {
   paymentSchema,
   receiptSchema,
   rentChargeSchema,
+  rentScheduleSchema,
   type AllocatePaymentInput,
   type Deposit,
   type DepositCreateInput,
@@ -26,6 +27,9 @@ import {
   type RentCharge,
   type RentChargeGenerateInput,
   type RentChargeQueryParams,
+  type RentSchedule,
+  type RentScheduleCreateInput,
+  type RentScheduleUpdateInput,
 } from "../types/finance";
 import { api } from "../../../services/api";
 import { getApiErrorMessage } from "../../../services/apiError";
@@ -110,6 +114,41 @@ export async function refundDeposit(
 export async function forfeitDeposit(id: string): Promise<Deposit> {
   const response = await api.post<unknown>(`deposits/${id}/forfeit/`, {});
   return depositSchema.parse(response.data);
+}
+
+export function fetchRentSchedules(
+  params: FinanceListParams = {},
+): Promise<FinanceCollection<RentSchedule>> {
+  return fetchCollection("rent-schedules/", params, rentScheduleSchema);
+}
+
+export async function fetchAllRentSchedules(): Promise<RentSchedule[]> {
+  const results: RentSchedule[] = [];
+  let page = 1;
+  let count = Number.POSITIVE_INFINITY;
+  while (results.length < count) {
+    const collection = await fetchRentSchedules({ page });
+    results.push(...collection.results);
+    count = collection.count;
+    if (collection.results.length === 0) break;
+    page += 1;
+  }
+  return results;
+}
+
+export async function createRentSchedule(
+  values: RentScheduleCreateInput,
+): Promise<RentSchedule> {
+  const response = await api.post<unknown>("rent-schedules/", values);
+  return rentScheduleSchema.parse(response.data);
+}
+
+export async function updateRentSchedule(
+  id: string,
+  values: RentScheduleUpdateInput,
+): Promise<RentSchedule> {
+  const response = await api.patch<unknown>(`rent-schedules/${id}/`, values);
+  return rentScheduleSchema.parse(response.data);
 }
 
 export async function fetchRentCharges(

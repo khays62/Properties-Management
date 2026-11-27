@@ -6,3 +6,4 @@ export { PaymentDetailsPage } from "./PaymentDetailsPage";
 export { PaymentListPage } from "./PaymentListPage";
 export { ReceiptDetailsPage } from "./ReceiptDetailsPage";
 export { ReceiptListPage } from "./ReceiptListPage";
+export { RentScheduleListPage } from "./RentScheduleListPage";
