@@ -2,15 +2,24 @@
   --brand-primary: #18a4ea;
   --brand-primary-hover: #1290cf;
   --brand-primary-light: #e6f7ff;
-  --brand-sidebar: #0b1220;
+  --brand-secondary: #0b1220;
+  --brand-sidebar: var(--brand-secondary);
   --brand-text-primary: #111827;
+  --brand-text-muted: #64748b;
   --brand-background: #f8fafc;
   --brand-surface: #ffffff;
+  --brand-surface-muted: #f1f5f9;
+  --brand-border: #e2e8f0;
   --brand-success: #16a34a;
+  --brand-success-subtle: #dcfce7;
   --brand-warning: #f59e0b;
+  --brand-warning-subtle: #fef3c7;
   --brand-danger: #dc2626;
+  --brand-danger-subtle: #fee2e2;
   --brand-info: #0284c7;
+  --brand-info-subtle: #e0f2fe;
   --brand-neutral: #64748b;
+  --brand-neutral-subtle: #f1f5f9;
 
   --spacing-0: 0;
   --spacing-1: 0.25rem;
@@ -50,6 +59,7 @@
   --font-size-xl: 1.25rem;
   --font-size-2xl: 1.5rem;
   --font-size-3xl: 1.875rem;
+  --font-size-display: 3.75rem;
   --font-weight-normal: 400;
   --font-weight-medium: 500;
   --font-weight-semibold: 600;

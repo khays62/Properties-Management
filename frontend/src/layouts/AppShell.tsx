@@ -83,6 +83,7 @@ export function AppShell({
       (item.id === "renewals" && canViewLeases) ||
       (item.id === "maintenance" && canViewMaintenance) ||
       (item.id === "finance" && canViewFinance) ||
+      (item.id === "team" && user?.role === "OWNER") ||
       ((item.id === "properties" ||
         item.id === "units" ||
         item.id === "listings" ||

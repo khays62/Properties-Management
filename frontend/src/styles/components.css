@@ -55,7 +55,7 @@
 }
 
 .op-button--secondary:hover:not(:disabled) {
-  background: #f1f5f9;
+  background: var(--color-surface-muted);
 }
 
 .op-button--ghost {
@@ -64,7 +64,7 @@
 }
 
 .op-button--ghost:hover:not(:disabled) {
-  background: #f1f5f9;
+  background: var(--color-surface-muted);
 }
 
 .op-button--danger {
@@ -85,6 +85,43 @@
   border-right-color: transparent;
   border-radius: var(--radius-full);
   animation: op-spin 700ms linear infinite;
+}
+
+.op-display {
+  font-size: clamp(var(--font-size-3xl), 5vw, var(--font-size-display));
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+  letter-spacing: -0.025em;
+}
+
+.op-page-title {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-tight);
+  letter-spacing: -0.015em;
+}
+
+.op-section-title {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-tight);
+}
+
+.op-body {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-normal);
+  line-height: var(--line-height-normal);
+}
+
+.op-caption {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-normal);
+  line-height: var(--line-height-normal);
+}
+
+.op-table-text {
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-normal);
 }
 
 .op-field {
@@ -130,7 +167,7 @@
 
 .op-field__control:disabled {
   cursor: not-allowed;
-  background: #f1f5f9;
+  background: var(--color-surface-muted);
   color: var(--color-text-muted);
 }
 
@@ -185,27 +222,27 @@
 }
 
 .op-badge--success {
-  background: #dcfce7;
+  background: var(--color-success-subtle);
   color: #166534;
 }
 
 .op-badge--warning {
-  background: #fef3c7;
+  background: var(--color-warning-subtle);
   color: #92400e;
 }
 
 .op-badge--danger {
-  background: #fee2e2;
+  background: var(--color-danger-subtle);
   color: #991b1b;
 }
 
 .op-badge--info {
-  background: var(--color-primary-light);
+  background: var(--color-info-subtle);
   color: #075985;
 }
 
 .op-badge--neutral {
-  background: #f1f5f9;
+  background: var(--color-neutral-subtle);
   color: #475569;
 }
 

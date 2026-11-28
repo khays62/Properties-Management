@@ -13,7 +13,7 @@ export function PageTitle({
 }: PageTitleProps) {
   return (
     <div className={className}>
-      <h1 className="text-2xl font-semibold tracking-tight text-text-primary sm:text-3xl">
+      <h1 className="op-page-title text-text-primary">
         {title}
       </h1>
       {subtitle && (

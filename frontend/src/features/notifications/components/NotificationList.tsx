@@ -24,7 +24,7 @@ export function NotificationList({
   }
 
   return (
-    <ul className="divide-y divide-slate-200 rounded-lg border border-slate-200 bg-card">
+    <ul className="divide-y divide-[var(--color-border)] rounded-lg border border-[var(--color-border)] bg-card">
       {notifications.map((notification) => (
         <NotificationItem
           key={notification.id}

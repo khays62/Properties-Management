@@ -96,7 +96,7 @@ export function Navbar({
   return (
     <header
       className={[
-        "sticky top-0 z-[var(--z-index-sticky)] flex h-[var(--header-height)] items-center justify-between border-b border-slate-200 bg-card px-4 shadow-sm sm:px-6",
+        "sticky top-0 z-[var(--z-index-sticky)] flex h-[var(--header-height)] items-center justify-between border-b border-[var(--color-border)] bg-card px-4 shadow-sm sm:px-6",
         className,
       ]
         .filter(Boolean)
@@ -175,7 +175,7 @@ export function Navbar({
               role="menu"
               aria-label="Profile"
               onKeyDown={handleProfileMenuKeyDown}
-              className="absolute right-0 top-full z-[var(--z-index-dropdown)] mt-2 w-48 rounded-lg border border-slate-200 bg-card p-1.5 shadow-lg"
+              className="absolute right-0 top-full z-[var(--z-index-dropdown)] mt-2 w-48 rounded-lg border border-[var(--color-border)] bg-card p-1.5 shadow-lg"
             >
               <div
                 role="menuitem"

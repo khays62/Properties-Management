@@ -61,6 +61,11 @@ import {
 } from "./features/maintenance/pages";
 import { NotificationListPage } from "./features/notifications/pages";
 import {
+  TeamInvitationAcceptPage,
+  TeamListPage,
+  TeamMemberDetailsPage,
+} from "./features/team/pages";
+import {
   ApplicationsPage,
   FinancePage,
   LeasesPage,
@@ -176,6 +181,10 @@ export default function App() {
               path="/set-password"
               element={<TenantPasswordSetupPage />}
             />
+            <Route
+              path="/team/accept-invitation"
+              element={<TeamInvitationAcceptPage />}
+            />
             <Route path="/unauthorized" element={<UnauthorizedPage />} />
             <Route
               path="/applications/success"
@@ -210,6 +219,22 @@ export default function App() {
               element={
                 <WorkflowRoute allowedRoles={USER_ROLES}>
                   <NotificationListPage />
+                </WorkflowRoute>
+              }
+            />
+            <Route
+              path="/team"
+              element={
+                <WorkflowRoute allowedRoles={["OWNER"]}>
+                  <TeamListPage />
+                </WorkflowRoute>
+              }
+            />
+            <Route
+              path="/team/:memberId"
+              element={
+                <WorkflowRoute allowedRoles={["OWNER"]}>
+                  <TeamMemberDetailsPage />
                 </WorkflowRoute>
               }
             />

@@ -26,7 +26,7 @@ export function DashboardCard({
   return (
     <Card
       className={[
-        "flex h-full flex-col gap-4 border border-slate-200 bg-card p-5 shadow-sm",
+        "flex h-full flex-col gap-4 border border-[var(--color-border)] bg-card p-5 shadow-sm",
         className,
       ]
         .filter(Boolean)

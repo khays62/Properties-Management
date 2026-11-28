@@ -29,8 +29,8 @@ export function NotificationItem({
   return (
     <li
       className={[
-        "flex items-start justify-between gap-4 border-b border-slate-200 px-4 py-4 last:border-b-0",
-        notification.is_read ? "bg-card" : "bg-blue-50/50",
+        "flex items-start justify-between gap-4 border-b border-[var(--color-border)] px-4 py-4 last:border-b-0",
+        notification.is_read ? "bg-card" : "bg-primary-subtle/50",
       ].join(" ")}
     >
       <div className="min-w-0 space-y-1">

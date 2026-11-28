@@ -4,17 +4,25 @@
   --color-primary: var(--brand-primary);
   --color-primary-hover: var(--brand-primary-hover);
   --color-primary-light: var(--brand-primary-light);
+  --color-primary-subtle: var(--brand-primary-light);
+  --color-secondary: var(--brand-secondary);
   --color-sidebar: var(--brand-sidebar);
   --color-text-primary: var(--brand-text-primary);
   --color-text-secondary: #475569;
-  --color-text-muted: #64748b;
+  --color-text-muted: var(--brand-text-muted);
   --color-background: var(--brand-background);
   --color-surface: var(--brand-surface);
-  --color-border: #e2e8f0;
+  --color-surface-muted: var(--brand-surface-muted);
+  --color-border: var(--brand-border);
   --color-success: var(--brand-success);
+  --color-success-subtle: var(--brand-success-subtle);
   --color-warning: var(--brand-warning);
+  --color-warning-subtle: var(--brand-warning-subtle);
   --color-danger: var(--brand-danger);
+  --color-danger-subtle: var(--brand-danger-subtle);
   --color-info: var(--brand-info);
+  --color-info-subtle: var(--brand-info-subtle);
   --color-neutral: var(--brand-neutral);
+  --color-neutral-subtle: var(--brand-neutral-subtle);
   --color-focus-ring: rgb(24 164 234 / 0.35);
 }
