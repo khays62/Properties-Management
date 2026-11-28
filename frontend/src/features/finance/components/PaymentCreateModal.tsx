@@ -63,10 +63,13 @@ export function PaymentCreateModal({
     const tenantIds = new Set(
       (leasesQuery.data ?? []).map((lease) => lease.tenant),
     );
-    return [...tenantIds].map((id) => ({
-      value: id,
-      label: `Tenant ${id.slice(0, 8)}`,
-    }));
+    return [...tenantIds].map((id) => {
+      const lease = leasesQuery.data?.find((item) => item.tenant === id);
+      return {
+        value: id,
+        label: lease?.tenant_name || lease?.tenant_email || "Tenant",
+      };
+    });
   }, [leasesQuery.data]);
   const [submissionError, setSubmissionError] = useState<string | null>(null);
   const {
@@ -154,9 +157,9 @@ export function PaymentCreateModal({
         )
       ) : (
         <Input
-          label="Tenant ID"
+          label="Tenant"
           required
-          placeholder="Enter the tenant UUID"
+          placeholder="Enter the tenant reference"
           error={errors.tenant?.message}
           {...register("tenant")}
         />

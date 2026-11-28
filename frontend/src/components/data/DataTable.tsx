@@ -114,10 +114,10 @@ export function DataTable<T>({
       <div className="overflow-x-auto">
         <table
           aria-label={ariaLabel}
-          className="w-full min-w-[40rem] border-collapse text-left text-sm text-text-primary"
+          className="op-table w-full min-w-[40rem] border-collapse text-left text-sm text-text-primary"
         >
           {caption && <caption className="sr-only">{caption}</caption>}
-          <thead className="bg-background text-text-secondary">
+          <thead className="op-table__head">
             <tr>
               {columns.map((column) => {
                 const isSorted = sort?.columnId === column.id;
@@ -133,6 +133,7 @@ export function DataTable<T>({
                     }
                     className={[
                       "whitespace-nowrap border-b border-[var(--color-border)] px-4 py-3 font-semibold",
+                      "op-table__heading",
                       column.headerClassName,
                     ]
                       .filter(Boolean)
@@ -143,7 +144,7 @@ export function DataTable<T>({
                         type="button"
                         aria-label={`Sort by ${column.id}`}
                         onClick={() => toggleSort(column)}
-                        className="inline-flex items-center gap-2 rounded-sm text-left hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-omni-blue"
+                        className="op-table__sort inline-flex items-center gap-2 rounded-sm text-left hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                       >
                         {column.header}
                         <svg
@@ -202,13 +203,13 @@ export function DataTable<T>({
               sortedData.map((row) => (
                 <tr
                   key={getRowId(row)}
-                  className="hover:bg-background"
+                  className="op-table__row"
                 >
                   {columns.map((column) => (
                     <td
                       key={column.id}
                       className={[
-                        "px-4 py-3 align-middle",
+                        "op-table__cell px-4 py-3 align-middle",
                         column.className,
                       ]
                         .filter(Boolean)

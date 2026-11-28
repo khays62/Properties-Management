@@ -85,7 +85,7 @@ export function ChargeDetailsPage() {
       {breadcrumbs}
       <PageHeader
         title={`Charge ${charge.billing_month}/${charge.billing_year}`}
-        subtitle={`Charge reference: ${charge.id}`}
+        subtitle={`${charge.tenant_name ?? "Tenant details unavailable"} · ${charge.lease_label ?? "Lease details unavailable"}`}
         actions={
           canManage ? (
             <RentChargeActionsMenu
@@ -105,12 +105,16 @@ export function ChargeDetailsPage() {
         </div>
         <dl className="grid gap-x-8 gap-y-5 sm:grid-cols-2 lg:grid-cols-3">
           <div>
-            <dt className="text-sm text-text-secondary">Tenant ID</dt>
-            <dd className="mt-1 break-all font-medium">{charge.tenant}</dd>
+            <dt className="text-sm text-text-secondary">Tenant</dt>
+            <dd className="mt-1 font-medium">
+              {charge.tenant_name ?? "Tenant details unavailable"}
+            </dd>
           </div>
           <div>
-            <dt className="text-sm text-text-secondary">Lease ID</dt>
-            <dd className="mt-1 break-all font-medium">{charge.lease}</dd>
+            <dt className="text-sm text-text-secondary">Lease</dt>
+            <dd className="mt-1 font-medium">
+              {charge.lease_label ?? "Lease details unavailable"}
+            </dd>
           </div>
           <div>
             <dt className="text-sm text-text-secondary">Billing period</dt>

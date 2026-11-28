@@ -98,10 +98,10 @@ export function PaymentListPage() {
       ? [
           {
             id: "tenant",
-            label: "Tenant ID",
+            label: "Tenant",
             type: "text" as const,
             value: tenant,
-            placeholder: "Filter by tenant UUID",
+            placeholder: "Name or email",
           },
         ]
       : []),
@@ -146,9 +146,10 @@ export function PaymentListPage() {
       },
       {
         id: "tenant",
-        header: "Tenant ID",
-        sortValue: (payment) => payment.tenant,
-        render: (payment) => `…${payment.tenant.slice(-8)}`,
+        header: "Tenant",
+        sortValue: (payment) => payment.tenant_name ?? "",
+        render: (payment) =>
+          payment.tenant_name ?? "Tenant details unavailable",
       },
       {
         id: "amount",

@@ -273,6 +273,81 @@ class FinanceApiTests(APITestCase):
         self.assertEqual(charge.balance, charge.amount)
         self.assertEqual(charge.due_date.day, self.schedule.due_day)
         self.assertEqual(charge.status, RentChargeStatus.PENDING)
+        self.assertEqual(
+            response.data[0]["lease_label"],
+            "Amina Tenant - Unit F-101 - Finance Test Property",
+        )
+        self.assertEqual(response.data[0]["tenant_name"], "Amina Tenant")
+
+    def test_finance_associations_use_human_readable_labels(self):
+        schedule_response = self.client.get(
+            reverse("finance:rent-schedule-detail", kwargs={"pk": self.schedule.pk})
+        )
+        self.assertEqual(schedule_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            schedule_response.data["lease_label"],
+            "Amina Tenant - Unit F-101 - Finance Test Property",
+        )
+
+        deposit = DepositService.create_deposit(
+            lease=self.lease,
+            created_by=self.owner,
+        )
+        deposit_response = self.client.get(
+            reverse("finance:deposit-detail", kwargs={"pk": deposit.pk})
+        )
+        self.assertEqual(deposit_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            deposit_response.data["lease_label"],
+            "Amina Tenant - Unit F-101 - Finance Test Property",
+        )
+
+        charge = self.create_charge()
+        payment_id = self.create_payment(
+            amount=Decimal("100.00"),
+            reference_number="PAY-LABEL-001",
+        )
+        allocation_response = self.allocate_payment(
+            payment_id,
+            [{"rent_charge": str(charge.pk), "amount_allocated": "100.00"}],
+        )
+        self.assertEqual(
+            allocation_response.data["allocations"][0]["rent_charge_label"],
+            "Amina Tenant - Unit F-101 - Finance Test Property - "
+            f"{charge.billing_month}/{charge.billing_year}",
+        )
+        self.assertEqual(allocation_response.data["tenant_name"], "Amina Tenant")
+
+        receipt_response = self.client.get(reverse("finance:receipt-list"))
+        self.assertEqual(receipt_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            receipt_response.data["results"][0]["payment_reference_number"],
+            "PAY-LABEL-001",
+        )
+        self.assertEqual(
+            receipt_response.data["results"][0]["tenant_name"],
+            "Amina Tenant",
+        )
+        charge_filter_response = self.client.get(
+            reverse("finance:rent-charge-list"),
+            {"tenant": "Amina Tenant"},
+        )
+        self.assertEqual(charge_filter_response.data["count"], 1)
+        lease_filter_response = self.client.get(
+            reverse("finance:rent-charge-list"),
+            {"lease": "Finance Test Property"},
+        )
+        self.assertEqual(lease_filter_response.data["count"], 1)
+        payment_filter_response = self.client.get(
+            reverse("finance:payment-list"),
+            {"tenant": "Amina Tenant"},
+        )
+        self.assertEqual(payment_filter_response.data["count"], 1)
+        receipt_filter_response = self.client.get(
+            reverse("finance:receipt-list"),
+            {"payment": "PAY-LABEL-001"},
+        )
+        self.assertEqual(receipt_filter_response.data["count"], 1)
 
     def test_invoice_issue_endpoint_persists_idempotent_invoice(self):
         from ..models import Invoice

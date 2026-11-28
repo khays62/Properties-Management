@@ -91,8 +91,9 @@ export function RentScheduleListPage() {
       {
         id: "lease",
         header: "Lease",
-        sortValue: (schedule) => schedule.lease,
-        render: (schedule) => `Lease ${schedule.lease.slice(0, 8)}`,
+        sortValue: (schedule) => schedule.lease_label ?? "",
+        render: (schedule) =>
+          schedule.lease_label ?? "Lease details unavailable",
       },
       {
         id: "due_day",
@@ -131,7 +132,7 @@ export function RentScheduleListPage() {
               sortable: false,
               render: (schedule: RentSchedule) => (
                 <ActionDropdown
-                  label={`Rent schedule actions for lease ${schedule.lease.slice(0, 8)}`}
+                  label={`Rent schedule actions for ${schedule.lease_label ?? "lease"}`}
                   items={[
                     {
                       id: "edit",

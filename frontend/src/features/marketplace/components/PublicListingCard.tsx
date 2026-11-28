@@ -51,7 +51,7 @@ export function PublicListingCard({ listing }: { listing: PublicListing }) {
       <Link
         to={`/listings/${listing.id}`}
         state={{ returnTo: `${location.pathname}${location.search}` }}
-        className="mt-auto inline-flex min-h-11 items-center justify-center rounded-md bg-omni-blue px-4 py-2 text-sm font-semibold text-white hover:bg-omni-blue-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-omni-blue focus-visible:ring-offset-2"
+        className="op-button op-button--primary mt-auto"
       >
         View listing
       </Link>

@@ -110,7 +110,13 @@ export function MaintenanceCreateModal({
       return [...new Map(
         leases
           .filter((lease) => lease.status === "ACTIVE")
-          .map((lease) => [lease.unit, { id: lease.unit, unit_number: lease.unit }]),
+          .map((lease) => [
+            lease.unit,
+            {
+              id: lease.unit,
+              unit_number: lease.unit_number ?? "Unit details unavailable",
+            },
+          ]),
       ).values()];
     }
     return unitsQuery.data ?? [];
@@ -123,7 +129,10 @@ export function MaintenanceCreateModal({
     );
     return [...tenantIds].map((id) => ({
       value: id,
-      label: `Tenant ${id.slice(0, 8)}`,
+      label:
+        leases.find((lease) => lease.tenant === id)?.tenant_name ||
+        leases.find((lease) => lease.tenant === id)?.tenant_email ||
+        "Tenant",
     }));
   }, [leases, selectedUnit]);
 
@@ -183,7 +192,7 @@ export function MaintenanceCreateModal({
       isSubmitting={isSaving || isSubmitting}
     >
       {submissionError && (
-        <p role="alert" className="rounded-md bg-danger/10 p-3 text-sm text-danger">
+        <p role="alert" className="rounded-md border border-danger-subtle bg-danger-subtle p-3 text-sm text-danger">
           {submissionError}
         </p>
       )}
@@ -218,7 +227,7 @@ export function MaintenanceCreateModal({
             options={selectableUnits.map((unit) => ({
               value: unit.id,
               label: isTenant
-                ? `Unit ${unit.unit_number.slice(0, 8)}`
+                ? `Unit ${unit.unit_number}`
                 : `${unit.unit_number}${"status" in unit ? ` · ${unit.status}` : ""}`,
             }))}
             error={errors.unit?.message}

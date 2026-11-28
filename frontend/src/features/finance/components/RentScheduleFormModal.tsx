@@ -194,7 +194,7 @@ export function RentScheduleFormModal({
             <>
               <Input
                 label="Lease"
-                value={`Lease ${schedule.lease}`}
+                value={schedule.lease_label ?? "Lease details unavailable"}
                 readOnly
               />
               <input type="hidden" {...register("lease")} />
@@ -215,7 +215,7 @@ export function RentScheduleFormModal({
                 required
                 options={eligibleLeases.map((lease) => ({
                   value: lease.id,
-                  label: `Lease ${lease.id.slice(0, 8)} · ${lease.status}`,
+                  label: `${lease.tenant_name || lease.tenant_email || "Tenant"} · ${lease.unit_number ? `Unit ${lease.unit_number}` : "Unit details unavailable"} · ${lease.property_name || "Property details unavailable"} · ${lease.status.toLowerCase().replace(/_/g, " ")}`,
                 }))}
                 error={errors.lease?.message}
                 {...leaseRegistration}

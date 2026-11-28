@@ -128,6 +128,11 @@ class LeaseWorkflowTests(APITestCase):
         LeaseService.approve_lease(lease, approved_by=self.owner)
         return LeaseService.activate_lease(lease, changed_by=self.owner)
 
+    def test_tenant_string_uses_human_name(self):
+        lease = self.create_lease()
+
+        self.assertEqual(str(lease.tenant), "Amina Tenant")
+
     def test_creation_provisions_tenant_and_password_setup_link(self):
         application = self.create_application()
         start_date = timezone.localdate()
@@ -436,6 +441,21 @@ class LeaseWorkflowTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK, response.data)
         self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]["tenant_name"], "Amina Tenant")
+        self.assertEqual(
+            response.data[0]["lease_label"],
+            "Amina Tenant - Unit A-101",
+        )
+        list_response = self.client.get(
+            reverse("leases:renewal-alert-list"),
+            {"lease": "Amina Tenant"},
+        )
+        self.assertEqual(list_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(list_response.data["count"], 1)
+        self.assertEqual(
+            list_response.data["results"][0]["lease_label"],
+            "Amina Tenant - Unit A-101",
+        )
         self.assertEqual(repeated_response.data, [])
         self.assertTrue(
             RenewalAlert.objects.filter(
@@ -482,6 +502,21 @@ class LeaseWorkflowTests(APITestCase):
 
         self.assertEqual(detail_response.status_code, status.HTTP_200_OK)
         self.assertEqual(detail_response.data["id"], str(lease.pk))
+        self.assertEqual(detail_response.data["tenant_name"], "Amina Tenant")
+        self.assertEqual(detail_response.data["unit_number"], self.unit.unit_number)
+        self.assertEqual(detail_response.data["property_name"], self.property.name)
+        self.assertEqual(
+            detail_response.data["application_listing_title"],
+            self.listing.title,
+        )
+        self.assertEqual(
+            detail_response.data["approved_by_name"],
+            self.owner.email,
+        )
+        self.assertEqual(
+            detail_response.data["status_history"][0]["changed_by_name"],
+            self.owner.email,
+        )
         self.assertEqual(list_response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(list_response.data["results"]), 1)
         self.assertEqual(create_response.status_code, status.HTTP_403_FORBIDDEN)

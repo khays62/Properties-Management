@@ -43,7 +43,7 @@ export function NotificationBell() {
     : `Notifications${unreadCount > 0 ? `, ${unreadCount} unread` : ""}`;
 
   return (
-    <div ref={wrapperRef} className="relative">
+    <div ref={wrapperRef} className="relative shrink-0">
       <button
         ref={buttonRef}
         type="button"
@@ -52,7 +52,7 @@ export function NotificationBell() {
         aria-expanded={open}
         aria-controls={open ? "notification-dropdown" : undefined}
         onClick={() => setOpen((isOpen) => !isOpen)}
-        className="relative grid h-10 w-10 place-items-center rounded-full text-text-secondary hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-omni-blue"
+        className="relative grid h-10 w-10 shrink-0 place-items-center rounded-full text-text-secondary hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-omni-blue"
       >
         <svg
           aria-hidden="true"

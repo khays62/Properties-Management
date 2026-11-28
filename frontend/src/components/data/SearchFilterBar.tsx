@@ -28,7 +28,7 @@ export function SearchFilterBar({
   return (
     <div
       className={[
-        "rounded-lg border border-[var(--color-border)] bg-card p-4",
+        "op-filter-surface",
         className,
       ]
         .filter(Boolean)

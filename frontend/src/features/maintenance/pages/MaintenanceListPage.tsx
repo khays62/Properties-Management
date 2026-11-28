@@ -18,7 +18,13 @@ import { getMaintenanceErrorMessage } from "../api/maintenance.api";
 import { MaintenanceActionsMenu } from "../components/MaintenanceActionsMenu";
 import { MaintenanceCreateModal } from "../components/MaintenanceCreateModal";
 import { MaintenanceWorkflowDialogs } from "../components/MaintenanceWorkflowDialogs";
-import { useMaintenanceProperties, useMaintenanceTickets, useMaintenanceUnits, useCreateMaintenanceTicket } from "../hooks/useMaintenance";
+import {
+  useCreateMaintenanceTicket,
+  useMaintenanceProperties,
+  useMaintenanceTenants,
+  useMaintenanceTickets,
+  useMaintenanceUnits,
+} from "../hooks/useMaintenance";
 import {
   MAINTENANCE_CATEGORIES,
   MAINTENANCE_PRIORITIES,
@@ -95,6 +101,7 @@ export function MaintenanceListPage() {
   };
   const query = useMaintenanceTickets(params);
   const propertiesQuery = useMaintenanceProperties(isManager);
+  const tenantsQuery = useMaintenanceTenants(isManager);
   const unitsQuery = useMaintenanceUnits(isManager);
   const createMutation = useCreateMaintenanceTicket();
   const [createOpen, setCreateOpen] = useState(false);
@@ -173,17 +180,21 @@ export function MaintenanceListPage() {
           },
           {
             id: "tenant",
-            label: "Tenant ID",
-            type: "text" as const,
+            label: "Tenant",
+            type: "select" as const,
             value: tenant,
-            placeholder: "Tenant UUID",
+            options: (tenantsQuery.data ?? []).map((item) => ({
+              value: item.id,
+              label: item.user_name || item.user_email || "Tenant",
+            })),
+            placeholder: "All tenants",
           },
           {
             id: "assigned_to",
-            label: "Assigned manager ID",
+            label: "Assigned manager",
             type: "text" as const,
             value: assignedTo,
-            placeholder: "Manager UUID",
+            placeholder: "Name or email",
           },
         ]
       : []),
@@ -209,10 +220,11 @@ export function MaintenanceListPage() {
         id: "unit",
         header: "Unit",
         sortValue: (ticket) =>
-          unitById.get(ticket.unit)?.unit_number ?? ticket.unit,
+          ticket.unit_number ?? unitById.get(ticket.unit)?.unit_number ?? "",
         render: (ticket) =>
+          ticket.unit_number ??
           unitById.get(ticket.unit)?.unit_number ??
-          `…${ticket.unit.slice(-8)}`,
+          "Unit details unavailable",
       },
       ...(isManager
         ? [
@@ -222,14 +234,18 @@ export function MaintenanceListPage() {
               sortValue: (ticket: MaintenanceTicket) => {
                 const ticketUnit = unitById.get(ticket.unit);
                 return ticketUnit
-                  ? propertyById.get(ticketUnit.property)?.name ?? ticketUnit.property
-                  : "";
+                  ? propertyById.get(ticketUnit.property)?.name ??
+                      ticket.property_name ??
+                      ""
+                  : ticket.property_name ?? "";
               },
               render: (ticket: MaintenanceTicket) => {
                 const ticketUnit = unitById.get(ticket.unit);
                 return ticketUnit
-                  ? propertyById.get(ticketUnit.property)?.name ?? "—"
-                  : "—";
+                  ? propertyById.get(ticketUnit.property)?.name ??
+                      ticket.property_name ??
+                      "Property details unavailable"
+                  : ticket.property_name ?? "Property details unavailable";
               },
             },
           ]
@@ -301,7 +317,7 @@ export function MaintenanceListPage() {
   }
 
   const filterError = isManager
-    ? propertiesQuery.error ?? unitsQuery.error
+    ? propertiesQuery.error ?? unitsQuery.error ?? tenantsQuery.error
     : null;
 
   return (
@@ -331,6 +347,7 @@ export function MaintenanceListPage() {
           onRetry={() => {
             if (propertiesQuery.isError) void propertiesQuery.refetch();
             if (unitsQuery.isError) void unitsQuery.refetch();
+            if (tenantsQuery.isError) void tenantsQuery.refetch();
           }}
         />
       )}

@@ -74,7 +74,6 @@ class MaintenanceSelector:
             (tenant_id, "tenant_id"),
             (property_id, "unit__property_id"),
             (unit_id, "unit_id"),
-            (assigned_to_id, "assigned_to_id"),
         ):
             if value:
                 try:
@@ -82,6 +81,22 @@ class MaintenanceSelector:
                 except (TypeError, ValueError):
                     return queryset.none()
                 queryset = queryset.filter(**{lookup: object_id})
+        if assigned_to_id:
+            try:
+                assigned_user_id = UUID(assigned_to_id)
+            except (TypeError, ValueError):
+                name_search = Q()
+                for token in assigned_to_id.split():
+                    name_search &= (
+                        Q(assigned_to__first_name__icontains=token)
+                        | Q(assigned_to__last_name__icontains=token)
+                        | Q(assigned_to__email__icontains=token)
+                    )
+                queryset = queryset.filter(
+                    name_search
+                )
+            else:
+                queryset = queryset.filter(assigned_to_id=assigned_user_id)
         if search:
             queryset = queryset.filter(
                 Q(title__icontains=search)

@@ -52,7 +52,7 @@ export function Modal({
         if (event.target === event.currentTarget) onClose();
       }}
       className={[
-        "m-auto w-[min(42rem,calc(100vw-2rem))] max-h-[calc(100dvh-2rem)] overflow-y-auto rounded-xl border border-[var(--color-border)] bg-card p-0 text-text-primary shadow-xl backdrop:bg-black/50 backdrop:backdrop-blur-sm",
+        "op-modal m-auto w-[min(42rem,calc(100vw-2rem))] max-h-[calc(100dvh-2rem)] overflow-y-auto rounded-xl border border-[var(--color-border)] bg-card p-0 text-text-primary",
         className,
       ]
         .filter(Boolean)

@@ -1,7 +1,7 @@
 from datetime import date, timedelta
 from uuid import UUID
 
-from django.db.models import Count, Q, QuerySet
+from django.db.models import Count, Prefetch, Q, QuerySet
 from django.utils.dateparse import parse_date
 from rest_framework.exceptions import ValidationError
 
@@ -10,7 +10,7 @@ from apps.properties.selectors.property_selector import PropertySelector
 from common.constants import LeaseStatus, UserRole
 from common.permissions import has_role
 
-from ..models import ACTIVE_LEASE_STATUSES, Lease, Tenant
+from ..models import ACTIVE_LEASE_STATUSES, Lease, LeaseStatusHistory, Tenant
 
 
 OCCUPANCY_LEASE_STATUSES = (LeaseStatus.ACTIVE, LeaseStatus.EXPIRING)
@@ -26,7 +26,14 @@ class LeaseSelector:
             "unit__property",
             "application",
             "application__applicant",
-        ).prefetch_related("status_history")
+            "application__listing",
+            "approved_by",
+        ).prefetch_related(
+            Prefetch(
+                "status_history",
+                queryset=LeaseStatusHistory.objects.select_related("changed_by"),
+            )
+        )
         if has_role(user, (UserRole.OWNER, UserRole.PROPERTY_MANAGER)):
             return queryset.filter(
                 unit__property__in=PropertySelector.get_queryset(user)

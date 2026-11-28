@@ -34,7 +34,7 @@ const allocationColumns: DataTableColumn<PaymentAllocation>[] = [
         to={`/finance/charges/${allocation.rent_charge}`}
         className="font-medium text-omni-blue hover:underline"
       >
-        {allocation.rent_charge}
+        {allocation.rent_charge_label ?? "Rent charge details unavailable"}
       </Link>
     ),
   },
@@ -124,8 +124,10 @@ export function PaymentDetailsPage() {
         </div>
         <dl className="grid gap-x-8 gap-y-5 sm:grid-cols-2 lg:grid-cols-3">
           <div>
-            <dt className="text-sm text-text-secondary">Tenant ID</dt>
-            <dd className="mt-1 break-all font-medium">{payment.tenant}</dd>
+            <dt className="text-sm text-text-secondary">Tenant</dt>
+            <dd className="mt-1 font-medium">
+              {payment.tenant_name ?? "Tenant details unavailable"}
+            </dd>
           </div>
           <div>
             <dt className="text-sm text-text-secondary">Amount</dt>

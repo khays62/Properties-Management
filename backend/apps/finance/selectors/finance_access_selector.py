@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from django.db.models import QuerySet
+from django.db.models import Q, QuerySet
 
 from apps.accounts.models import User
 from apps.leases.models import Lease, Tenant
@@ -8,6 +8,17 @@ from apps.leases.selectors.lease_selector import LeaseSelector
 from apps.properties.selectors.property_selector import PropertySelector
 from common.constants import UserRole
 from common.permissions import has_role
+
+
+def tenant_name_search(value: str, *, user_lookup: str) -> Q:
+    query = Q()
+    for token in value.split():
+        query &= (
+            Q(**{f"{user_lookup}__first_name__icontains": token})
+            | Q(**{f"{user_lookup}__last_name__icontains": token})
+            | Q(**{f"{user_lookup}__email__icontains": token})
+        )
+    return query
 
 
 class FinanceAccessSelector:

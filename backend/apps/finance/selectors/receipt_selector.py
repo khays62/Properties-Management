@@ -7,7 +7,7 @@ from common.constants import UserRole
 from common.permissions import has_role
 
 from ..models import Receipt
-from .finance_access_selector import FinanceAccessSelector
+from .finance_access_selector import FinanceAccessSelector, tenant_name_search
 
 
 class ReceiptSelector:
@@ -44,8 +44,23 @@ class ReceiptSelector:
                 try:
                     object_id = UUID(value)
                 except (TypeError, ValueError):
-                    return queryset.none()
-                queryset = queryset.filter(**{lookup: object_id})
+                    if lookup == "payment_id":
+                        queryset = queryset.filter(
+                            Q(payment__reference_number__icontains=value)
+                            | tenant_name_search(
+                                value,
+                                user_lookup="payment__tenant__user",
+                            )
+                        )
+                    else:
+                        queryset = queryset.filter(
+                            tenant_name_search(
+                                value,
+                                user_lookup="payment__tenant__user",
+                            )
+                        )
+                else:
+                    queryset = queryset.filter(**{lookup: object_id})
         if search:
             queryset = queryset.filter(
                 Q(receipt_number__icontains=search)

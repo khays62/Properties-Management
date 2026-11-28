@@ -14,7 +14,7 @@ export function ApplicationSuccessPage() {
       <Card className="w-full space-y-5 text-center">
         <div
           aria-hidden="true"
-          className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-emerald-100 text-2xl font-bold text-emerald-700"
+          className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-success-subtle text-2xl font-bold text-success"
         >
           ✓
         </div>
@@ -27,7 +27,7 @@ export function ApplicationSuccessPage() {
         </p>
         <Link
           to="/listings"
-          className="inline-flex min-h-11 items-center justify-center rounded-md bg-omni-blue px-5 py-2 text-sm font-semibold text-white hover:bg-omni-blue-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-omni-blue focus-visible:ring-offset-2"
+          className="op-button op-button--primary"
         >
           Browse listings
         </Link>

@@ -9,6 +9,10 @@ export const RENEWAL_ALERT_STATUSES = [
 export const renewalAlertSchema = z.object({
   id: z.string().uuid(),
   lease: z.string().uuid(),
+  lease_label: z.string().optional(),
+  tenant_name: z.string().optional(),
+  unit_number: z.string().optional(),
+  property_name: z.string().optional(),
   alert_date: z.string(),
   days_before_expiry: z.union([z.literal(90), z.literal(60), z.literal(30)]),
   status: z.enum(RENEWAL_ALERT_STATUSES),

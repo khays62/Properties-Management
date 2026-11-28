@@ -8,7 +8,8 @@ import { WorkflowRecords } from "../components/WorkflowRecords";
 
 const columns = [
   { key: "title", label: "Listing" },
-  { key: "unit", label: "Unit ID" },
+  { key: "unit_number", label: "Unit" },
+  { key: "property_name", label: "Property" },
   { key: "rent_amount", label: "Rent" },
   { key: "available_date", label: "Available" },
   { key: "status", label: "Status" },

@@ -42,7 +42,8 @@ class Tenant(BaseModel):
         ordering = ["user__last_name", "user__first_name", "user__email"]
 
     def __str__(self) -> str:
-        return f"{self.user.get_full_name() or self.user.email}"
+        full_name = f"{self.user.first_name} {self.user.last_name}".strip()
+        return full_name or self.user.email
 
 
 class Lease(BaseModel):

@@ -9,10 +9,10 @@ export interface AlertProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 const variantClasses: Record<AlertVariant, string> = {
-  success: "border-success/30 bg-success/10 text-success",
-  info: "border-info/30 bg-info/10 text-info",
-  warning: "border-warning/30 bg-warning/10 text-warning",
-  danger: "border-danger/30 bg-danger/10 text-danger",
+  success: "border-success-subtle bg-success-subtle text-success",
+  info: "border-info-subtle bg-info-subtle text-info",
+  warning: "border-warning-subtle bg-warning-subtle text-warning",
+  danger: "border-danger-subtle bg-danger-subtle text-danger",
 };
 
 export function Alert({

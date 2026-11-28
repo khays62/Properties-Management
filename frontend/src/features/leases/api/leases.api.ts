@@ -18,6 +18,8 @@ import {
   type LeaseQueryParams,
   type LeaseRenewalInput,
   type LeaseTransitionAction,
+  tenantSchema,
+  type Tenant,
 } from "../types/lease";
 
 interface PaginatedLeaseResponse {
@@ -107,6 +109,27 @@ export function fetchLeaseProperties(): Promise<Property[]> {
 
 export function fetchLeaseUnits(): Promise<Unit[]> {
   return fetchAllPages((page) => fetchUnits({ page }));
+}
+
+export function fetchLeaseTenants(): Promise<Tenant[]> {
+  return fetchAllPages(async (page) => {
+    const response = await api.get<unknown>("tenants/", {
+      params: { page_size: 20, page },
+    });
+    const payload = response.data;
+
+    if (Array.isArray(payload)) {
+      const results = z.array(tenantSchema).parse(payload);
+      return { results, count: results.length };
+    }
+    if (isPaginatedResponse(payload)) {
+      return {
+        results: z.array(tenantSchema).parse(payload.results),
+        count: payload.count,
+      };
+    }
+    throw new Error("The server returned an invalid tenants response.");
+  });
 }
 
 export function fetchLeaseApplications(): Promise<Application[]> {

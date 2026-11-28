@@ -134,7 +134,7 @@ export function ListingDetailsPage() {
       />
       <PageHeader
         title={listing.title}
-        subtitle={`Listing ID: ${listing.id}`}
+        subtitle={`${unit.unit_number} · ${property.name}`}
         actions={
           <ListingActionsMenu
             listing={listing}

@@ -100,7 +100,7 @@ export function AppShell({
   return (
     <div
       className={[
-        "min-h-screen bg-background transition-[padding-left] duration-200 motion-reduce:transition-none",
+        "op-app-shell min-h-screen bg-background transition-[padding-left] duration-200 motion-reduce:transition-none",
         sidebarCollapsed ? "lg:pl-20" : "lg:pl-[var(--sidebar-width)]",
         className,
       ]

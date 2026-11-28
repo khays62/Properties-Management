@@ -15,7 +15,7 @@ import { WorkflowPage } from "../components/WorkflowPage";
 import { WorkflowRecords } from "../components/WorkflowRecords";
 
 const chargeColumns = [
-  { key: "lease", label: "Lease ID" },
+  { key: "lease_label", label: "Lease" },
   { key: "billing_month", label: "Month" },
   { key: "billing_year", label: "Year" },
   { key: "amount", label: "Amount" },
@@ -25,14 +25,14 @@ const chargeColumns = [
 ];
 
 const basicColumns = [
-  { key: "lease", label: "Lease ID" },
+  { key: "lease_label", label: "Lease" },
   { key: "required_amount", label: "Required" },
   { key: "paid_amount", label: "Paid" },
   { key: "status", label: "Status" },
 ];
 
 const paymentColumns = [
-  { key: "tenant", label: "Tenant ID" },
+  { key: "tenant_name", label: "Tenant" },
   { key: "amount", label: "Amount" },
   { key: "reference_number", label: "Reference" },
   { key: "payment_method", label: "Method" },
@@ -74,6 +74,14 @@ export function FinancePage() {
     queryKey: ["workflow", "payments"],
     queryFn: () => fetchWorkflowRecords("payments/"),
   });
+  const tenantOptions = [
+    ...new Map(
+      (leases.data ?? []).map((lease) => [
+        getRecordText(lease, "tenant"),
+        getRecordText(lease, "tenant_name"),
+      ]),
+    ),
+  ].map(([value, label]) => ({ value, label }));
 
   return (
     <WorkflowPage
@@ -90,7 +98,7 @@ export function FinancePage() {
                 label: "Lease",
                 type: "select",
                 required: true,
-                options: toOptions(leases.data ?? [], "id"),
+                options: toOptions(leases.data ?? [], "lease_label"),
               },
               {
                 name: "due_day",
@@ -134,7 +142,7 @@ export function FinancePage() {
                 label: "Lease",
                 type: "select",
                 required: true,
-                options: toOptions(leases.data ?? [], "id"),
+                options: toOptions(leases.data ?? [], "lease_label"),
               },
             ]}
             onSubmit={(values) => createWorkflowRecord("deposits/", values)}
@@ -196,10 +204,7 @@ export function FinancePage() {
                 label: "Tenant",
                 type: "select",
                 required: true,
-                options: (leases.data ?? []).map((lease) => ({
-                  value: getRecordText(lease, "tenant"),
-                  label: `Tenant ${getRecordText(lease, "tenant").slice(0, 8)}`,
-                })),
+                options: tenantOptions,
               },
               {
                 name: "amount",
@@ -253,7 +258,10 @@ export function FinancePage() {
                 label: "Rent charge",
                 type: "select",
                 required: true,
-                options: toOptions(charges.data ?? [], "id"),
+                options: (charges.data ?? []).map((charge) => ({
+                  value: charge.id,
+                  label: `${getRecordText(charge, "lease_label")} · ${getRecordText(charge, "billing_month")}/${getRecordText(charge, "billing_year")}`,
+                })),
               },
               {
                 name: "amount_allocated",
@@ -304,7 +312,7 @@ export function FinancePage() {
         path="receipts/"
         queryName="receipts"
         columns={[
-          { key: "payment", label: "Payment ID" },
+          { key: "payment_reference_number", label: "Payment" },
           { key: "receipt_number", label: "Receipt number" },
           { key: "generated_at", label: "Generated" },
         ]}

@@ -11,16 +11,16 @@ const applicationColumns = [
       <span>{getRecordText(record, "applicant")}</span>
     ),
   },
-  { key: "listing", label: "Listing ID" },
+  { key: "listing_title", label: "Listing" },
   { key: "move_in_date", label: "Move-in date" },
   { key: "status", label: "Status" },
 ];
 
 const screeningColumns = [
-  { key: "application", label: "Application ID" },
+  { key: "application_label", label: "Application" },
   { key: "score", label: "Score" },
   { key: "status", label: "Screening status" },
-  { key: "reviewed_by", label: "Reviewed by" },
+  { key: "reviewed_by_name", label: "Reviewed by" },
 ];
 
 function applicationActions(record: WorkflowRecord) {

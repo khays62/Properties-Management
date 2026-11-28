@@ -150,6 +150,20 @@ class MaintenanceApiTests(APITestCase):
             ),
             [MaintenanceActivityAction.CREATED],
         )
+        response = self.client.get(
+            reverse("maintenance:ticket-detail", kwargs={"pk": ticket.pk})
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK, response.data)
+        self.assertEqual(
+            response.data["tenant_name"],
+            self.tenant_user.email,
+        )
+        self.assertEqual(response.data["unit_number"], self.unit.unit_number)
+        self.assertEqual(response.data["property_name"], self.property.name)
+        self.assertEqual(
+            response.data["activities"][0]["performed_by_name"],
+            self.tenant_user.email,
+        )
 
     def test_tenant_cannot_create_ticket_for_unoccupied_unit(self):
         self.unit.status = UnitStatus.AVAILABLE
@@ -203,6 +217,19 @@ class MaintenanceApiTests(APITestCase):
             status.HTTP_200_OK,
             assign_response.data,
         )
+        self.assertEqual(
+            assign_response.data["assigned_to_name"],
+            self.manager.email,
+        )
+        assigned_filter_response = self.client.get(
+            reverse("maintenance:ticket-list"),
+            {"assigned_to": self.manager.email},
+        )
+        self.assertEqual(
+            assigned_filter_response.status_code,
+            status.HTTP_200_OK,
+        )
+        self.assertEqual(assigned_filter_response.data["count"], 1)
         start_response = self.client.post(
             reverse("maintenance:ticket-start", kwargs={"pk": ticket_id}),
             {},

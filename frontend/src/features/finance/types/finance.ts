@@ -39,6 +39,7 @@ const amountSchema = z.union([z.string(), z.number()]);
 export const depositSchema = z.object({
   id: uuidSchema,
   lease: uuidSchema,
+  lease_label: z.string().optional(),
   required_amount: amountSchema,
   paid_amount: amountSchema,
   reference_number: z.string().nullable(),
@@ -53,6 +54,8 @@ export const rentChargeSchema = z.object({
   id: uuidSchema,
   lease: uuidSchema,
   tenant: uuidSchema,
+  tenant_name: z.string().optional(),
+  lease_label: z.string().optional(),
   invoice_number: z.string().nullable(),
   billing_month: z.number().int().min(1).max(12),
   billing_year: z.number().int().positive(),
@@ -67,6 +70,7 @@ export const rentChargeSchema = z.object({
 export const rentScheduleSchema = z.object({
   id: uuidSchema,
   lease: uuidSchema,
+  lease_label: z.string().optional(),
   due_day: z.number().int().min(1).max(31),
   frequency: z.enum(RENT_FREQUENCIES),
   is_active: z.boolean(),
@@ -78,12 +82,14 @@ export const paymentAllocationSchema = z.object({
   id: uuidSchema,
   payment: uuidSchema,
   rent_charge: uuidSchema,
+  rent_charge_label: z.string().optional(),
   amount_allocated: amountSchema,
 });
 
 export const paymentSchema = z.object({
   id: uuidSchema,
   tenant: uuidSchema,
+  tenant_name: z.string().optional(),
   amount: amountSchema,
   payment_date: z.string(),
   reference_number: z.string(),
@@ -101,6 +107,8 @@ export const paymentDetailsSchema = paymentSchema.extend({
 export const receiptSchema = z.object({
   id: uuidSchema,
   payment: uuidSchema,
+  payment_reference_number: z.string().optional(),
+  tenant_name: z.string().optional(),
   receipt_number: z.string(),
   generated_at: z.string(),
   created_at: z.string(),

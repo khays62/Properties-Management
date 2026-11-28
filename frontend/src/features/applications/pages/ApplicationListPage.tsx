@@ -173,8 +173,9 @@ export function ApplicationListPage() {
         sortValue: (application) =>
           listingById.get(application.listing) ?? application.listing,
         render: (application) =>
+          application.listing_title ??
           listingById.get(application.listing) ??
-          `Listing ${application.listing.slice(0, 8)}`,
+          "Listing details unavailable",
       },
       {
         id: "move_in_date",

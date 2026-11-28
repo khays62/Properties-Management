@@ -13,8 +13,8 @@ import { WorkflowPage } from "../components/WorkflowPage";
 import { WorkflowRecords } from "../components/WorkflowRecords";
 
 const leaseColumns = [
-  { key: "tenant", label: "Tenant ID" },
-  { key: "unit", label: "Unit ID" },
+  { key: "tenant_name", label: "Tenant" },
+  { key: "unit_number", label: "Unit" },
   { key: "start_date", label: "Start date" },
   { key: "end_date", label: "End date" },
   { key: "monthly_rent", label: "Rent" },
@@ -70,7 +70,7 @@ export function LeasesPage() {
               .filter((record) => getRecordText(record, "status") === "APPROVED")
               .map((record) => ({
                 value: record.id,
-                label: `${getRecordText(record, "applicant")} — ${record.id.slice(0, 8)}`,
+                label: getRecordText(record, "applicant"),
               })),
           },
           { name: "start_date", label: "Start date", type: "date", required: true },

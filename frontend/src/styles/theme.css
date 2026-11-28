@@ -1,19 +1,24 @@
 :root {
-  color-scheme: light;
+  color-scheme: dark;
 
   --color-primary: var(--brand-primary);
   --color-primary-hover: var(--brand-primary-hover);
   --color-primary-light: var(--brand-primary-light);
   --color-primary-subtle: var(--brand-primary-light);
+  --color-primary-wash: var(--brand-primary-wash);
+  --color-on-primary: var(--brand-on-primary);
+  --color-accent: var(--brand-accent);
   --color-secondary: var(--brand-secondary);
   --color-sidebar: var(--brand-sidebar);
   --color-text-primary: var(--brand-text-primary);
-  --color-text-secondary: #475569;
+  --color-text-secondary: var(--brand-text-secondary);
   --color-text-muted: var(--brand-text-muted);
   --color-background: var(--brand-background);
   --color-surface: var(--brand-surface);
   --color-surface-muted: var(--brand-surface-muted);
   --color-border: var(--brand-border);
+  --color-border-hover: var(--brand-border-hover);
+  --color-border-strong: var(--brand-border-strong);
   --color-success: var(--brand-success);
   --color-success-subtle: var(--brand-success-subtle);
   --color-warning: var(--brand-warning);
@@ -24,5 +29,12 @@
   --color-info-subtle: var(--brand-info-subtle);
   --color-neutral: var(--brand-neutral);
   --color-neutral-subtle: var(--brand-neutral-subtle);
-  --color-focus-ring: rgb(24 164 234 / 0.35);
+  --color-danger-hover: var(--brand-danger-hover);
+  --color-focus-ring: var(--brand-focus-ring);
+  --color-hero-background: var(--brand-secondary);
+  --color-hero-surface: var(--hero-surface-color);
+  --color-hero-border: var(--hero-border-color);
+  --color-hero-text: var(--brand-hero-text);
+  --color-hero-muted: var(--brand-hero-muted);
+  --color-hero-accent: var(--brand-hero-accent);
 }

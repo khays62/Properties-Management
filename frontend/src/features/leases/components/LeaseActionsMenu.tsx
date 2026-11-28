@@ -51,5 +51,10 @@ export function LeaseActionsMenu({
 
   if (items.length === 0) return null;
 
-  return <ActionDropdown label={`Lease actions for ${lease.id}`} items={items} />;
+  return (
+    <ActionDropdown
+      label={`Lease actions for ${lease.lease_label ?? "lease"}`}
+      items={items}
+    />
+  );
 }

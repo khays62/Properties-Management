@@ -28,6 +28,7 @@ import { LeaseWorkflowDialogs } from "../components/LeaseWorkflowDialogs";
 import {
   useCreateLease,
   useLeasePropertyOptions,
+  useLeaseTenantOptions,
   useLeases,
   useLeaseUnitOptions,
 } from "../hooks/useLeases";
@@ -101,6 +102,7 @@ export function LeaseListPage() {
   };
   const leasesQuery = useLeases(params);
   const propertiesQuery = useLeasePropertyOptions(canManageLeases);
+  const tenantsQuery = useLeaseTenantOptions(canManageLeases);
   const unitsQuery = useLeaseUnitOptions(canManageLeases);
   const createLeaseMutation = useCreateLease();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -147,10 +149,14 @@ export function LeaseListPage() {
           },
           {
             id: "tenant",
-            label: "Tenant ID",
-            type: "text" as const,
+            label: "Tenant",
+            type: "select" as const,
             value: tenantId,
-            placeholder: "Filter by tenant ID",
+            options: (tenantsQuery.data ?? []).map((tenant) => ({
+              value: tenant.id,
+              label: tenant.user_name || tenant.user_email || "Tenant",
+            })),
+            placeholder: "All tenants",
           },
         ]
       : []),
@@ -181,24 +187,18 @@ export function LeaseListPage() {
   const columns = useMemo<DataTableColumn<LeaseDetails>[]>(
     () => [
       {
-        id: "lease",
-        header: "Lease",
-        sortValue: (lease) => lease.created_at,
+        id: "tenant",
+        header: "Tenant",
+        sortValue: (lease) => lease.tenant_name ?? lease.tenant_email ?? "",
         render: (lease) => (
           <Link
             to={`/leases/${lease.id}`}
             state={{ returnTo: `${location.pathname}${location.search}` }}
             className="font-medium text-omni-blue hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-omni-blue"
           >
-            {lease.id.slice(0, 8).toUpperCase()}
+            {lease.tenant_name || lease.tenant_email || "Tenant details unavailable"}
           </Link>
         ),
-      },
-      {
-        id: "tenant",
-        header: "Tenant",
-        sortValue: (lease) => lease.tenant,
-        render: (lease) => `…${lease.tenant.slice(-8)}`,
       },
       {
         id: "property",
@@ -206,22 +206,25 @@ export function LeaseListPage() {
         sortValue: (lease) => {
           const unit = unitById.get(lease.unit);
           return unit
-            ? propertyById.get(unit.property)?.name ?? unit.property
-            : lease.unit;
+            ? propertyById.get(unit.property)?.name ?? lease.property_name ?? ""
+            : lease.property_name ?? "";
         },
         render: (lease) => {
           const unit = unitById.get(lease.unit);
           return unit
-            ? propertyById.get(unit.property)?.name ?? `…${unit.property.slice(-8)}`
-            : "—";
+            ? propertyById.get(unit.property)?.name ?? lease.property_name ?? "Property details unavailable"
+            : lease.property_name ?? "Property details unavailable";
         },
       },
       {
         id: "unit",
         header: "Unit",
-        sortValue: (lease) => unitById.get(lease.unit)?.unit_number ?? lease.unit,
+        sortValue: (lease) =>
+          lease.unit_number ?? unitById.get(lease.unit)?.unit_number ?? "",
         render: (lease) =>
-          unitById.get(lease.unit)?.unit_number ?? `…${lease.unit.slice(-8)}`,
+          lease.unit_number ??
+          unitById.get(lease.unit)?.unit_number ??
+          "Unit details unavailable",
       },
       {
         id: "monthly_rent",
@@ -296,7 +299,7 @@ export function LeaseListPage() {
   }
 
   const filterError = canManageLeases
-    ? propertiesQuery.error ?? unitsQuery.error
+    ? propertiesQuery.error ?? unitsQuery.error ?? tenantsQuery.error
     : null;
 
   return (
@@ -330,6 +333,7 @@ export function LeaseListPage() {
           onRetry={() => {
             if (propertiesQuery.isError) void propertiesQuery.refetch();
             if (unitsQuery.isError) void unitsQuery.refetch();
+            if (tenantsQuery.isError) void tenantsQuery.refetch();
           }}
         />
       )}

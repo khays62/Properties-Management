@@ -85,12 +85,12 @@ export function ReceiptDetailsPage() {
           </div>
           <div>
             <dt className="text-sm text-text-secondary">Payment</dt>
-            <dd className="mt-1 break-all font-medium">
+            <dd className="mt-1 font-medium">
               <Link
                 to={`/finance/payments/${receipt.payment}`}
                 className="text-omni-blue hover:underline"
               >
-                {receipt.payment}
+                {receipt.payment_reference_number ?? "Payment details unavailable"}
               </Link>
             </dd>
           </div>

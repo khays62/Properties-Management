@@ -28,9 +28,9 @@ function SidebarNavigation({
       <ul className="space-y-1">
         {items.map((item) => {
           const itemClassName = [
-            "flex min-h-11 items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+            "op-sidebar-link flex min-h-11 items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
             item.active
-              ? "bg-white/10 text-white"
+              ? "op-sidebar-link--active bg-white/10 text-white"
               : "text-white/75 hover:bg-white/10 hover:text-white",
             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-omni-blue",
           ].join(" ");

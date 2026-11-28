@@ -99,7 +99,7 @@ export function DepositPaymentModal({
       title="Record deposit payment"
       description={
         deposit
-          ? `Record a payment against the deposit for lease ${deposit.lease.slice(0, 8)}. The backend validates the remaining amount.`
+          ? `Record a payment against the deposit for ${deposit.lease_label ?? "this lease"}. The backend validates the remaining amount.`
           : undefined
       }
       onClose={close}

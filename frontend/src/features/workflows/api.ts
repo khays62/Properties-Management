@@ -88,7 +88,16 @@ export function getRecordText(
     return String(value);
   }
   if (isRecord(value)) {
-    const preferred = ["name", "title", "email", "unit_number", "id"];
+    const firstName = value.first_name;
+    const lastName = value.last_name;
+    if (typeof firstName === "string" || typeof lastName === "string") {
+      const fullName = [firstName, lastName]
+        .filter((name): name is string => typeof name === "string")
+        .join(" ")
+        .trim();
+      if (fullName) return fullName;
+    }
+    const preferred = ["name", "title", "email", "unit_number"];
     for (const field of preferred) {
       const nestedValue = value[field];
       if (typeof nestedValue === "string" || typeof nestedValue === "number") {

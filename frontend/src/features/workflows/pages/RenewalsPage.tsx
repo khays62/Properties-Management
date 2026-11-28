@@ -13,7 +13,7 @@ import { WorkflowPage } from "../components/WorkflowPage";
 import { WorkflowRecords } from "../components/WorkflowRecords";
 
 const renewalColumns = [
-  { key: "lease", label: "Lease ID" },
+  { key: "lease_label", label: "Tenant and unit" },
   { key: "days_before_expiry", label: "Days before expiry" },
   { key: "alert_date", label: "Alert date" },
   { key: "status", label: "Status" },
@@ -80,7 +80,7 @@ export function RenewalsPage() {
                   )
                   .map((lease) => ({
                     value: lease.id,
-                    label: `${getRecordText(lease, "tenant")} — ${lease.id.slice(0, 8)}`,
+                    label: `${getRecordText(lease, "tenant_name")} · ${getRecordText(lease, "unit_number")}`,
                   })),
               },
               {

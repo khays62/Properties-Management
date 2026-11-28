@@ -160,7 +160,7 @@ export function RenewalAlertDetailsPage() {
         items={[
           { label: "Renewals", href: listPath },
           {
-            label: `Alert ${alert.id.slice(0, 8).toUpperCase()}`,
+            label: "Renewal alert",
             current: true,
           },
         ]}
@@ -216,13 +216,17 @@ export function RenewalAlertDetailsPage() {
           </div>
           <div className="sm:col-span-2 lg:col-span-3">
             <dt className="text-sm text-text-secondary">Lease</dt>
-            <dd className="mt-1 break-all font-medium">
+            <dd className="mt-1 font-medium">
               <Link
                 to={`/leases/${alert.lease}`}
                 state={{ returnTo: "/leases" }}
                 className="text-omni-blue hover:underline"
               >
-                {alert.lease}
+                {lease
+                  ? `${lease.tenant_name || lease.tenant_email || "Tenant"}${
+                      lease.unit_number ? ` · Unit ${lease.unit_number}` : ""
+                    }`
+                  : "View associated lease"}
               </Link>
             </dd>
           </div>
@@ -265,17 +269,27 @@ export function RenewalAlertDetailsPage() {
             <StatusBadge status={lease.status} />
           </div>
           <dl className="grid gap-x-8 gap-y-5 sm:grid-cols-2 lg:grid-cols-3">
-            <div className="sm:col-span-2 lg:col-span-3">
-              <dt className="text-sm text-text-secondary">Lease ID</dt>
-              <dd className="mt-1 break-all font-medium">{lease.id}</dd>
+            <div>
+              <dt className="text-sm text-text-secondary">Tenant</dt>
+              <dd className="mt-1 font-medium">
+                {lease.tenant_name || lease.tenant_email || "Tenant details unavailable"}
+              </dd>
             </div>
             <div>
-              <dt className="text-sm text-text-secondary">Tenant ID</dt>
-              <dd className="mt-1 break-all font-medium">{lease.tenant}</dd>
+              <dt className="text-sm text-text-secondary">Unit</dt>
+              <dd className="mt-1 font-medium">
+                {lease.unit_number
+                  ? `Unit ${lease.unit_number}`
+                  : "Unit details unavailable"}
+              </dd>
             </div>
             <div>
-              <dt className="text-sm text-text-secondary">Unit ID</dt>
-              <dd className="mt-1 break-all font-medium">{lease.unit}</dd>
+              <dt className="text-sm text-text-secondary">Property</dt>
+              <dd className="mt-1 font-medium">
+                {lease.property_name
+                  ? `${lease.property_name}${lease.property_code ? ` (${lease.property_code})` : ""}`
+                  : "Property details unavailable"}
+              </dd>
             </div>
             <div>
               <dt className="text-sm text-text-secondary">Lease period</dt>

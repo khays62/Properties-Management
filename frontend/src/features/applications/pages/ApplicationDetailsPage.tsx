@@ -328,7 +328,7 @@ export function ApplicationDetailsPage() {
       />
       <PageHeader
         title={`${applicant.first_name} ${applicant.last_name}`}
-        subtitle={`Application ID: ${application.id}`}
+        subtitle={`Application for ${listing.title} · ${property.name}`}
         actions={requestedActions}
       />
 

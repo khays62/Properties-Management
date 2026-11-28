@@ -15,7 +15,9 @@ import { WorkflowRecords } from "../components/WorkflowRecords";
 
 const ticketColumns = [
   { key: "title", label: "Request" },
-  { key: "unit", label: "Unit ID" },
+  { key: "unit_number", label: "Unit" },
+  { key: "property_name", label: "Property" },
+  { key: "tenant_name", label: "Tenant" },
   { key: "category", label: "Category" },
   { key: "priority", label: "Priority" },
   { key: "status", label: "Status" },
@@ -76,16 +78,20 @@ export function MaintenancePage() {
   const unitOptions = isTenant
     ? (leases.data ?? []).map((lease) => ({
         value: getRecordText(lease, "unit"),
-        label: `Unit ${getRecordText(lease, "unit").slice(0, 8)}`,
+        label: `Unit ${getRecordText(lease, "unit_number")}`,
       }))
     : (units.data ?? []).map((unit) => ({
         value: unit.id,
         label: getRecordText(unit, "unit_number"),
       }));
-  const tenantOptions = (leases.data ?? []).map((lease) => ({
-    value: getRecordText(lease, "tenant"),
-    label: `Tenant ${getRecordText(lease, "tenant").slice(0, 8)}`,
-  }));
+  const tenantOptions = [
+    ...new Map(
+      (leases.data ?? []).map((lease) => [
+        getRecordText(lease, "tenant"),
+        getRecordText(lease, "tenant_name"),
+      ]),
+    ),
+  ].map(([value, label]) => ({ value, label }));
 
   return (
     <WorkflowPage

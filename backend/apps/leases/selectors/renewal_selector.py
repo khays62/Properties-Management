@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from django.db.models import Count, QuerySet
+from django.db.models import Count, Q, QuerySet
 
 from apps.accounts.models import User
 from apps.properties.selectors.property_selector import PropertySelector
@@ -48,8 +48,23 @@ class RenewalSelector:
                 try:
                     object_id = UUID(value)
                 except (TypeError, ValueError):
-                    return queryset.none()
-                queryset = queryset.filter(**{lookup: object_id})
+                    name_search = Q()
+                    for token in value.split():
+                        name_search &= (
+                            Q(lease__tenant__user__first_name__icontains=token)
+                            | Q(lease__tenant__user__last_name__icontains=token)
+                            | Q(lease__tenant__user__email__icontains=token)
+                        )
+                    if lookup == "lease_id":
+                        queryset = queryset.filter(
+                            name_search
+                            | Q(lease__unit__unit_number__icontains=value)
+                            | Q(lease__unit__property__name__icontains=value)
+                        )
+                    else:
+                        return queryset.none()
+                else:
+                    queryset = queryset.filter(**{lookup: object_id})
         return queryset
 
     @classmethod

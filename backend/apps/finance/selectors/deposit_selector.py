@@ -5,7 +5,7 @@ from django.db.models import Q, QuerySet, Sum
 from apps.accounts.models import User
 
 from ..models import Deposit
-from .finance_access_selector import FinanceAccessSelector
+from .finance_access_selector import FinanceAccessSelector, tenant_name_search
 
 
 class DepositSelector:
@@ -45,8 +45,18 @@ class DepositSelector:
                 try:
                     object_id = UUID(value)
                 except (TypeError, ValueError):
-                    return queryset.none()
-                queryset = queryset.filter(**{lookup: object_id})
+                    name_search = tenant_name_search(
+                        value,
+                        user_lookup="lease__tenant__user",
+                    )
+                    if lookup == "lease_id":
+                        name_search |= (
+                            Q(lease__unit__unit_number__icontains=value)
+                            | Q(lease__unit__property__name__icontains=value)
+                        )
+                    queryset = queryset.filter(name_search)
+                else:
+                    queryset = queryset.filter(**{lookup: object_id})
         if search:
             queryset = queryset.filter(
                 Q(lease__tenant__user__email__icontains=search)

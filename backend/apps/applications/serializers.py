@@ -1,6 +1,12 @@
 from rest_framework import serializers
 
+from apps.accounts.models import User
+
 from .models import Applicant, RentalApplication, Screening
+
+
+def user_display_name(user: User) -> str:
+    return f"{user.first_name} {user.last_name}".strip() or user.email
 
 
 class ApplicantSerializer(serializers.ModelSerializer):
@@ -24,6 +30,16 @@ class ApplicantSerializer(serializers.ModelSerializer):
 
 class RentalApplicationSerializer(serializers.ModelSerializer):
     applicant = ApplicantSerializer()
+    applicant_name = serializers.SerializerMethodField()
+    listing_title = serializers.CharField(source="listing.title", read_only=True)
+
+    @staticmethod
+    def get_applicant_name(application: RentalApplication) -> str:
+        applicant = application.applicant
+        return (
+            f"{applicant.first_name} {applicant.last_name}".strip()
+            or applicant.email
+        )
 
     class Meta:
         model = RentalApplication
@@ -31,7 +47,9 @@ class RentalApplicationSerializer(serializers.ModelSerializer):
         fields = (
             "id",
             "listing",
+            "listing_title",
             "applicant",
+            "applicant_name",
             "move_in_date",
             "notes",
             "rejection_reason",
@@ -51,11 +69,28 @@ class RentalApplicationSerializer(serializers.ModelSerializer):
 
 
 class ScreeningSerializer(serializers.ModelSerializer):
+    application_label = serializers.SerializerMethodField()
+    reviewed_by_name = serializers.SerializerMethodField()
+
+    @staticmethod
+    def get_application_label(screening: Screening) -> str:
+        application = screening.application
+        applicant = application.applicant
+        name = f"{applicant.first_name} {applicant.last_name}".strip()
+        return f"{name or applicant.email} - {application.listing.title}"
+
+    @staticmethod
+    def get_reviewed_by_name(screening: Screening) -> str | None:
+        if screening.reviewed_by is None:
+            return None
+        return user_display_name(screening.reviewed_by)
+
     class Meta:
         model = Screening
         fields = (
             "id",
             "application",
+            "application_label",
             "score",
             "notes",
             "income_verified",
@@ -63,6 +98,7 @@ class ScreeningSerializer(serializers.ModelSerializer):
             "references_checked",
             "status",
             "reviewed_by",
+            "reviewed_by_name",
             "reviewed_at",
             "created_at",
             "updated_at",

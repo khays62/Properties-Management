@@ -36,7 +36,7 @@ export function DepositActionsMenu({
 
   return items.length > 0 ? (
     <ActionDropdown
-      label={`Deposit actions for lease ${deposit.lease.slice(0, 8)}`}
+      label={`Deposit actions for ${deposit.lease_label ?? "lease"}`}
       items={items}
     />
   ) : null;

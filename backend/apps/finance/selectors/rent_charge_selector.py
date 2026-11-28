@@ -5,7 +5,7 @@ from django.db.models import Q, QuerySet, Sum
 from apps.accounts.models import User
 
 from ..models import RentCharge, RentSchedule
-from .finance_access_selector import FinanceAccessSelector
+from .finance_access_selector import FinanceAccessSelector, tenant_name_search
 
 
 class RentChargeSelector:
@@ -29,6 +29,7 @@ class RentChargeSelector:
         queryset = RentSchedule.objects.select_related(
             "lease",
             "lease__tenant",
+            "lease__tenant__user",
             "lease__unit",
             "lease__unit__property",
         )
@@ -65,8 +66,24 @@ class RentChargeSelector:
                 try:
                     object_id = UUID(value)
                 except (TypeError, ValueError):
-                    return queryset.none()
-                queryset = queryset.filter(**{lookup: object_id})
+                    if lookup == "lease_id":
+                        queryset = queryset.filter(
+                            tenant_name_search(
+                                value,
+                                user_lookup="lease__tenant__user",
+                            )
+                            | Q(lease__unit__unit_number__icontains=value)
+                            | Q(lease__unit__property__name__icontains=value)
+                        )
+                    else:
+                        queryset = queryset.filter(
+                            tenant_name_search(
+                                value,
+                                user_lookup="lease__tenant__user",
+                            )
+                        )
+                else:
+                    queryset = queryset.filter(**{lookup: object_id})
         for value, lookup in (
             (billing_month, "billing_month"),
             (billing_year, "billing_year"),

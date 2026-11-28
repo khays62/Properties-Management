@@ -14,7 +14,7 @@ import type {
 import { getMaintenanceErrorMessage } from "../api/maintenance.api";
 
 const schema = z.object({
-  assigned_to: z.string().uuid("Enter a valid property manager UUID."),
+  assigned_to: z.string().uuid("Select or enter a valid property manager."),
   notes: z.string(),
 });
 
@@ -97,8 +97,8 @@ export function MaintenanceAssignmentModal({
         />
       ) : (
         <Input
-          label="Property manager UUID"
-          placeholder="Enter the manager UUID"
+          label="Property manager"
+          placeholder="Enter the manager reference"
           required
           error={errors.assigned_to?.message}
           {...register("assigned_to")}

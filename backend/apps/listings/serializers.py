@@ -10,11 +10,19 @@ from .models import (
 
 
 class ListingSerializer(serializers.ModelSerializer):
+    unit_number = serializers.CharField(source="unit.unit_number", read_only=True)
+    property_name = serializers.CharField(
+        source="unit.property.name",
+        read_only=True,
+    )
+
     class Meta:
         model = Listing
         fields = (
             "id",
             "unit",
+            "unit_number",
+            "property_name",
             "title",
             "description",
             "rent_amount",

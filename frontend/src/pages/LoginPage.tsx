@@ -74,7 +74,7 @@ export function LoginPage() {
           {(submitError || authError) && (
             <p
               role="alert"
-              className="rounded-md border border-danger bg-card px-3 py-2 text-sm text-danger"
+              className="rounded-md border border-danger-subtle bg-danger-subtle px-3 py-2 text-sm text-danger"
             >
               {submitError ?? authError}
             </p>
@@ -82,7 +82,7 @@ export function LoginPage() {
           {passwordSetupSuccess && (
             <p
               role="status"
-              className="rounded-md border border-success bg-card px-3 py-2 text-sm text-success"
+              className="rounded-md border border-success-subtle bg-success-subtle px-3 py-2 text-sm text-success"
             >
               Password set successfully. You can now sign in.
             </p>

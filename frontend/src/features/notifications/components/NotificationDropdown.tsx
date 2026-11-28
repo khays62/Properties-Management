@@ -28,7 +28,7 @@ export function NotificationDropdown({ onClose }: NotificationDropdownProps) {
       id="notification-dropdown"
       role="dialog"
       aria-label="Recent notifications"
-      className="absolute right-0 top-full z-[var(--z-index-dropdown)] mt-2 w-[min(24rem,calc(100vw-2rem))] overflow-hidden rounded-lg border border-[var(--color-border)] bg-card shadow-xl"
+      className="op-notification-dropdown z-[var(--z-index-dropdown)] overflow-hidden rounded-lg border border-[var(--color-border)] bg-card shadow-xl"
     >
       <div className="flex items-center justify-between gap-3 border-b border-[var(--color-border)] px-4 py-3">
         <h2 className="text-sm font-semibold text-text-primary">

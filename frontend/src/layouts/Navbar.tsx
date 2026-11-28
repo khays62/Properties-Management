@@ -128,10 +128,13 @@ export function Navbar({
             />
           </svg>
         </Button>
-        <AppLogo variant="navbar" className="lg:hidden" />
+        <AppLogo
+          variant="navbar"
+          className="op-navbar-brand lg:hidden"
+        />
       </div>
 
-      <div className="flex items-center gap-3 sm:gap-5">
+      <div className="flex shrink-0 items-center gap-3 sm:gap-5">
         <NotificationBell />
         <div ref={profileAreaRef} className="relative">
           <button

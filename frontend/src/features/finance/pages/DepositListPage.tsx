@@ -88,17 +88,17 @@ export function DepositListPage() {
       ? [
           {
             id: "lease",
-            label: "Lease ID",
+            label: "Lease",
             type: "text" as const,
             value: lease,
-            placeholder: "Filter by lease UUID",
+            placeholder: "Tenant, unit, or property",
           },
           {
             id: "tenant",
-            label: "Tenant ID",
+            label: "Tenant",
             type: "text" as const,
             value: tenant,
-            placeholder: "Filter by tenant UUID",
+            placeholder: "Name or email",
           },
         ]
       : []),
@@ -119,14 +119,14 @@ export function DepositListPage() {
       {
         id: "lease",
         header: "Lease",
-        sortValue: (deposit) => deposit.lease,
+        sortValue: (deposit) => deposit.lease_label ?? "",
         render: (deposit) => (
           <Link
             to={`/finance/deposits/${deposit.id}`}
             state={{ returnTo: `${location.pathname}${location.search}` }}
             className="font-medium text-omni-blue hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-omni-blue"
           >
-            …{deposit.lease.slice(-8)}
+            {deposit.lease_label ?? "Lease details unavailable"}
           </Link>
         ),
       },

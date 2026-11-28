@@ -8,7 +8,7 @@ from common.constants import UserRole
 from common.permissions import has_role
 
 from ..models import Payment
-from .finance_access_selector import FinanceAccessSelector
+from .finance_access_selector import FinanceAccessSelector, tenant_name_search
 
 
 class PaymentSelector:
@@ -21,6 +21,7 @@ class PaymentSelector:
             "allocations",
             "allocations__rent_charge",
             "allocations__rent_charge__lease",
+            "allocations__rent_charge__lease__tenant__user",
             "allocations__rent_charge__lease__unit__property",
         )
         if has_role(user, (UserRole.ACCOUNTANT,)):
@@ -48,8 +49,11 @@ class PaymentSelector:
             try:
                 object_id = UUID(tenant_id)
             except (TypeError, ValueError):
-                return queryset.none()
-            queryset = queryset.filter(tenant_id=object_id)
+                queryset = queryset.filter(
+                    tenant_name_search(tenant_id, user_lookup="tenant__user")
+                )
+            else:
+                queryset = queryset.filter(tenant_id=object_id)
         if search:
             queryset = queryset.filter(
                 Q(tenant__user__email__icontains=search)

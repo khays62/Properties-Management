@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from django.db.models import QuerySet
+from django.db.models import Prefetch, QuerySet
 from rest_framework import mixins, serializers, viewsets
 from rest_framework.decorators import action
 from rest_framework.request import Request
@@ -60,7 +60,15 @@ class MaintenanceTicketViewSet(
             search=self.request.query_params.get("search"),
         )
         if self.action == "retrieve":
-            queryset = queryset.prefetch_related("attachments", "activities")
+            queryset = queryset.prefetch_related(
+                "attachments",
+                Prefetch(
+                    "activities",
+                    queryset=MaintenanceActivity.objects.select_related(
+                        "performed_by"
+                    ),
+                ),
+            )
         return queryset
 
     def get_serializer_class(self) -> type[serializers.BaseSerializer]:

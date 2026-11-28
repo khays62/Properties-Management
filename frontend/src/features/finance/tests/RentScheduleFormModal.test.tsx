@@ -18,7 +18,11 @@ import type { LeaseDetails } from "../../leases/types/lease";
 const activeLease: LeaseDetails = {
   id: "6de0f86d-23a9-4ad3-98d7-c1f29c9ea42b",
   tenant: "996b7f24-8762-4c08-86e4-6835ed59a5e5",
+  tenant_name: "Amina Tenant",
+  lease_label: "Amina Tenant - Unit A-101",
   unit: "a5513a82-c7b3-41bd-bdae-9e7a70c6e8ac",
+  unit_number: "A-101",
+  property_name: "Test Property",
   application: "b5513a82-c7b3-41bd-bdae-9e7a70c6e8ac",
   start_date: "2026-01-01",
   end_date: "2027-01-01",
@@ -103,7 +107,8 @@ describe("RentScheduleFormModal", () => {
     const { onCreate, onSaved } = renderModal();
 
     const leaseSelector = screen.getByRole("combobox", { name: "Lease" });
-    expect(leaseSelector).toHaveTextContent("Lease 7de0f86d · EXPIRING");
+    expect(leaseSelector).toHaveTextContent("Amina Tenant");
+    expect(leaseSelector).toHaveTextContent("Unit A-101");
     expect(leaseSelector).not.toHaveTextContent("DRAFT");
     expect(leaseSelector).not.toHaveTextContent(activeLease.id);
 

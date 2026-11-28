@@ -26,6 +26,7 @@ import { RentScheduleListPage } from "../pages/RentScheduleListPage";
 const schedule = {
   id: "c5513a82-c7b3-41bd-bdae-9e7a70c6e8ac",
   lease: "6de0f86d-23a9-4ad3-98d7-c1f29c9ea42b",
+  lease_label: "Amina Tenant - Unit A-101",
   due_day: 15,
   frequency: "MONTHLY",
   is_active: true,
@@ -69,7 +70,7 @@ describe("RentScheduleListPage", () => {
     renderPage();
 
     expect(screen.getByRole("table", { name: "Rent schedules" })).toBeVisible();
-    expect(screen.getByText("Lease 6de0f86d")).toBeVisible();
+    expect(screen.getByText(schedule.lease_label)).toBeVisible();
     expect(screen.getByText("15")).toBeVisible();
     expect(screen.getByText("Monthly")).toBeVisible();
     expect(screen.getByText("Active")).toBeVisible();
@@ -114,7 +115,7 @@ describe("RentScheduleListPage", () => {
     ).not.toBeInTheDocument();
     expect(
       screen.queryByRole("button", {
-        name: `Rent schedule actions for lease ${schedule.lease.slice(0, 8)}`,
+        name: `Rent schedule actions for ${schedule.lease_label}`,
       }),
     ).not.toBeInTheDocument();
   });

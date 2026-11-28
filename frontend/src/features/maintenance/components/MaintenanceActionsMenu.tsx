@@ -33,7 +33,7 @@ export function MaintenanceActionsMenu({
 
   return items.length > 0 ? (
     <ActionDropdown
-      label={`Actions for maintenance ticket ${ticket.id.slice(0, 8)}`}
+      label={`Actions for maintenance ticket ${ticket.title}`}
       items={items}
     />
   ) : null;

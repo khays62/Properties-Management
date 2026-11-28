@@ -96,10 +96,10 @@ export function RenewalAlertListPage() {
     },
     {
       id: "lease",
-      label: "Lease ID",
+      label: "Tenant, unit, or property",
       type: "text",
       value: lease,
-      placeholder: "Filter by lease UUID",
+      placeholder: "Search lease details",
     },
     ...(canManage
       ? [
@@ -147,15 +147,15 @@ export function RenewalAlertListPage() {
       },
       {
         id: "lease",
-        header: "Lease",
-        sortValue: (alert) => alert.lease,
+        header: "Tenant and unit",
+        sortValue: (alert) => alert.lease_label ?? "",
         render: (alert) => (
           <Link
             to={`/renewals/${alert.id}`}
             state={{ returnTo: `${location.pathname}${location.search}` }}
             className="font-medium text-omni-blue hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-omni-blue"
           >
-            {alert.lease.slice(0, 8).toUpperCase()}
+            {alert.lease_label ?? "Lease details unavailable"}
           </Link>
         ),
       },

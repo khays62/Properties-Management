@@ -55,19 +55,19 @@ export function ReceiptListPage() {
       ? [
           {
             id: "tenant",
-            label: "Tenant ID",
+            label: "Tenant",
             type: "text" as const,
             value: tenant,
-            placeholder: "Filter by tenant UUID",
+            placeholder: "Name or email",
           },
         ]
       : []),
     {
       id: "payment",
-      label: "Payment ID",
+      label: "Payment",
       type: "text",
       value: payment,
-      placeholder: "Filter by payment UUID",
+      placeholder: "Payment reference or tenant",
     },
   ];
 
@@ -89,14 +89,14 @@ export function ReceiptListPage() {
       },
       {
         id: "payment",
-        header: "Payment ID",
-        sortValue: (receipt) => receipt.payment,
+        header: "Payment",
+        sortValue: (receipt) => receipt.payment_reference_number ?? "",
         render: (receipt) => (
           <Link
             to={`/finance/payments/${receipt.payment}`}
             className="font-medium text-omni-blue hover:underline"
           >
-            {receipt.payment}
+            {receipt.payment_reference_number ?? "Payment details unavailable"}
           </Link>
         ),
       },

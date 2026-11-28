@@ -61,7 +61,10 @@ export function MaintenanceDetailsPage() {
   );
   const unitLabel = useMemo(() => {
     if (!ticket) return "—";
-    return unit ? `${unit.unit_number} (${unit.status})` : ticket.unit;
+    const number = ticket.unit_number ?? unit?.unit_number;
+    const status = ticket.unit_status ?? unit?.status;
+    if (!number) return "Unit details unavailable";
+    return `Unit ${number}${status ? ` (${humanize(status)})` : ""}`;
   }, [ticket, unit]);
 
   if (query.isLoading) {
@@ -104,7 +107,7 @@ export function MaintenanceDetailsPage() {
       {breadcrumbs}
       <PageHeader
         title={ticket.title}
-        subtitle={`Ticket ${ticket.id}`}
+        subtitle={`${unitLabel}${ticket.property_name ? ` · ${ticket.property_name}` : ""}`}
         actions={
           <MaintenanceActionsMenu
             ticket={ticket}
@@ -133,7 +136,7 @@ export function MaintenanceDetailsPage() {
           </div>
           <div>
             <dt className="text-sm text-text-secondary">Unit</dt>
-            <dd className="mt-1 break-all font-medium">{unitLabel}</dd>
+            <dd className="mt-1 font-medium">{unitLabel}</dd>
           </div>
           {isManager && (
             <div>
@@ -141,18 +144,22 @@ export function MaintenanceDetailsPage() {
               <dd className="mt-1 font-medium">
                 {property
                   ? `${property.name} (${property.code})`
-                  : unit?.property ?? "—"}
+                  : ticket.property_name
+                    ? `${ticket.property_name}${ticket.property_code ? ` (${ticket.property_code})` : ""}`
+                    : "Property details unavailable"}
               </dd>
             </div>
           )}
           <div>
-            <dt className="text-sm text-text-secondary">Tenant ID</dt>
-            <dd className="mt-1 break-all font-medium">{ticket.tenant}</dd>
+            <dt className="text-sm text-text-secondary">Tenant</dt>
+            <dd className="mt-1 font-medium">
+              {ticket.tenant_name || ticket.tenant_email || "Tenant details unavailable"}
+            </dd>
           </div>
           <div>
             <dt className="text-sm text-text-secondary">Assigned manager</dt>
-            <dd className="mt-1 break-all font-medium">
-              {ticket.assigned_to ?? "Not assigned"}
+            <dd className="mt-1 font-medium">
+              {ticket.assigned_to_name ?? "Not assigned"}
             </dd>
           </div>
           <div>
@@ -216,8 +223,8 @@ export function MaintenanceDetailsPage() {
                     </p>
                   )}
                   {activity.performed_by && (
-                    <p className="mt-1 break-all text-xs text-text-secondary">
-                      Performed by {activity.performed_by}
+                    <p className="mt-1 text-xs text-text-secondary">
+                      Performed by {activity.performed_by_name ?? "a team member"}
                     </p>
                   )}
                 </li>

@@ -86,7 +86,7 @@ export function DepositDetailsPage() {
       <FinanceNavigation />
       {breadcrumbs}
       <PageHeader
-        title={`Deposit for lease ${deposit.lease.slice(0, 8)}`}
+        title={`Security deposit · ${deposit.lease_label ?? "Lease details unavailable"}`}
         subtitle="Security deposit status and latest recorded payment details."
         actions={
           canManage ? (
@@ -103,8 +103,10 @@ export function DepositDetailsPage() {
         </div>
         <dl className="grid gap-x-8 gap-y-5 sm:grid-cols-2 lg:grid-cols-3">
           <div>
-            <dt className="text-sm text-text-secondary">Lease ID</dt>
-            <dd className="mt-1 break-all font-medium">{deposit.lease}</dd>
+            <dt className="text-sm text-text-secondary">Lease</dt>
+            <dd className="mt-1 font-medium">
+              {deposit.lease_label ?? "Lease details unavailable"}
+            </dd>
           </div>
           <div>
             <dt className="text-sm text-text-secondary">Required amount</dt>

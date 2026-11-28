@@ -56,6 +56,7 @@ export const screeningSchema = z.object({
 export const applicationSchema = z.object({
   id: z.string().uuid(),
   listing: z.string().uuid(),
+  listing_title: z.string().optional(),
   applicant: applicantSchema,
   move_in_date: z.string(),
   notes: z.string(),

@@ -15,7 +15,7 @@ import type { LeaseDetails } from "../../leases/types/lease";
 import type { DepositCreateInput } from "../types/finance";
 
 const schema = z.object({
-  lease: z.string().uuid("Enter or select a valid lease."),
+  lease: z.string().uuid("Select or enter a valid lease."),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -88,7 +88,7 @@ export function DepositCreateModal({
       isSubmitting={isSaving || isSubmitting}
     >
       {submissionError && (
-        <p role="alert" className="rounded-md bg-danger/10 p-3 text-sm text-danger">
+        <p role="alert" className="rounded-md border border-danger-subtle bg-danger-subtle p-3 text-sm text-danger">
           {submissionError}
         </p>
       )}
@@ -115,7 +115,7 @@ export function DepositCreateModal({
             required
             options={eligibleLeases.map((lease) => ({
               value: lease.id,
-              label: `Lease ${lease.id.slice(0, 8)} · ${lease.status} · deposit ${lease.deposit_amount}`,
+              label: `${lease.lease_label || `${lease.tenant_name || lease.tenant_email || "Tenant"} · Unit ${lease.unit_number || "details unavailable"}`} · ${lease.status.toLowerCase().replace(/_/g, " ")} · deposit ${lease.deposit_amount}`,
             }))}
             error={errors.lease?.message}
             {...register("lease")}
@@ -123,9 +123,9 @@ export function DepositCreateModal({
         )
       ) : (
         <Input
-          label="Lease ID"
+          label="Lease"
           required
-          placeholder="Enter the lease UUID"
+          placeholder="Enter the lease reference"
           error={errors.lease?.message}
           {...register("lease")}
         />

@@ -14,6 +14,8 @@ export const listingSchema = z
   .object({
     id: z.string().uuid(),
     unit: z.string().uuid(),
+    unit_number: z.string().optional(),
+    property_name: z.string().optional(),
     title: z.string(),
     description: z.string(),
     rent_amount: numericValueSchema,

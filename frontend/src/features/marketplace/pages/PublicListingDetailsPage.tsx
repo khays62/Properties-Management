@@ -156,13 +156,13 @@ export function PublicListingDetailsPage() {
             <Link
               to={`/listings/${listing.id}/apply`}
               state={{ returnTo: `${location.pathname}${location.search}` }}
-              className="inline-flex min-h-11 w-full items-center justify-center rounded-md bg-omni-blue px-4 py-2 text-sm font-semibold text-white hover:bg-omni-blue-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-omni-blue focus-visible:ring-offset-2"
+              className="op-button op-button--primary w-full"
             >
               Apply for this listing
             </Link>
             <Link
               to={listingsPath}
-              className="inline-flex min-h-11 w-full items-center justify-center rounded-md border border-[var(--color-border)] bg-card px-4 py-2 text-sm font-semibold text-text-primary hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-omni-blue"
+              className="op-button op-button--secondary w-full"
             >
               Back to listings
             </Link>

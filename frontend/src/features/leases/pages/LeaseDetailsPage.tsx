@@ -43,8 +43,10 @@ function formatMoney(value: string | number): string {
   }).format(amount);
 }
 
-function displayIdentifier(value: string): string {
-  return value;
+function formatStatus(status: string): string {
+  return status.replace(/_/g, " ").toLowerCase().replace(/\b\w/g, (letter) =>
+    letter.toUpperCase(),
+  );
 }
 
 export function LeaseDetailsPage() {
@@ -110,12 +112,25 @@ export function LeaseDetailsPage() {
 
   const unit = canManageLeases ? unitById.get(lease.unit) : undefined;
   const property = unit ? propertyById.get(unit.property) : undefined;
+  const tenantName = lease.tenant_name || lease.tenant_email;
+  const unitNumber = lease.unit_number ?? unit?.unit_number;
+  const leaseTitle = tenantName
+    ? `${tenantName}${unitNumber ? ` · Unit ${unitNumber}` : ""}`
+    : "Lease details";
+  const applicationDisplay = [
+    lease.application_name,
+    lease.application_listing_title,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+  const propertyName =
+    lease.property_name ?? (property ? `${property.name} (${property.code})` : null);
 
   return (
     <div className="space-y-6 py-6">
-      {breadcrumbs(`Lease ${lease.id.slice(0, 8).toUpperCase()}`)}
+      {breadcrumbs(leaseTitle)}
       <PageHeader
-        title={`Lease ${lease.id.slice(0, 8).toUpperCase()}`}
+        title={leaseTitle}
         subtitle="Contract terms, approval history, and lease status."
         actions={
           canManageLeases ? (
@@ -140,27 +155,29 @@ export function LeaseDetailsPage() {
         <dl className="grid gap-x-8 gap-y-5 sm:grid-cols-2 lg:grid-cols-3">
           <div>
             <dt className="text-sm text-text-secondary">Tenant</dt>
-            <dd className="mt-1 break-all font-medium">
-              {displayIdentifier(lease.tenant)}
+            <dd className="mt-1 font-medium">
+              {tenantName ?? "Tenant details unavailable"}
             </dd>
           </div>
           <div>
             <dt className="text-sm text-text-secondary">Application</dt>
-            <dd className="mt-1 break-all font-medium">
-              {displayIdentifier(lease.application)}
+            <dd className="mt-1 font-medium">
+              {applicationDisplay || "Application details unavailable"}
             </dd>
           </div>
           <div>
             <dt className="text-sm text-text-secondary">Unit</dt>
             <dd className="mt-1 font-medium">
-              {unit ? `${unit.unit_number} · ${unit.status}` : lease.unit}
+              {unitNumber
+                ? `Unit ${unitNumber}${lease.unit_status || unit?.status ? ` · ${formatStatus(lease.unit_status ?? unit?.status ?? "")}` : ""}`
+                : "Unit details unavailable"}
             </dd>
           </div>
           {canManageLeases && (
             <div>
               <dt className="text-sm text-text-secondary">Property</dt>
               <dd className="mt-1 font-medium">
-                {property ? `${property.name} (${property.code})` : unit?.property ?? "—"}
+                {propertyName ?? "Property details unavailable"}
               </dd>
             </div>
           )}
@@ -197,8 +214,8 @@ export function LeaseDetailsPage() {
           {lease.approved_by && (
             <div>
               <dt className="text-sm text-text-secondary">Approved by</dt>
-              <dd className="mt-1 break-all font-medium">
-                {lease.approved_by}
+              <dd className="mt-1 font-medium">
+                {lease.approved_by_name ?? "Approver details unavailable"}
               </dd>
             </div>
           )}
@@ -248,8 +265,8 @@ export function LeaseDetailsPage() {
                   {event.change_reason}
                 </p>
                 {event.changed_by && (
-                  <p className="mt-1 break-all text-xs text-text-secondary">
-                    Changed by {event.changed_by}
+                  <p className="mt-1 text-xs text-text-secondary">
+                    Changed by {event.changed_by_name ?? "a staff member"}
                   </p>
                 )}
               </li>

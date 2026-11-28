@@ -17,7 +17,7 @@ export function PageTitle({
         {title}
       </h1>
       {subtitle && (
-        <p className="mt-1 text-sm text-text-secondary sm:text-base">
+        <p className="op-page-subtitle mt-1 text-sm text-text-secondary sm:text-base">
           {subtitle}
         </p>
       )}

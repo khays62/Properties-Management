@@ -37,7 +37,7 @@ export function RenewalAlertActionsMenu({
 
   return items.length > 0 ? (
     <ActionDropdown
-      label={`Actions for renewal alert ${alert.id.slice(0, 8)}`}
+      label={`Actions for ${alert.lease_label ?? "renewal alert"}`}
       items={items}
     />
   ) : null;

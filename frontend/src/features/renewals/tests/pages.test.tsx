@@ -45,6 +45,10 @@ import { RenewalAlertListPage } from "../pages/RenewalAlertListPage";
 const alert = {
   id: "c5513a82-c7b3-41bd-bdae-9e7a70c6e8ac",
   lease: "6de0f86d-23a9-4ad3-98d7-c1f29c9ea42b",
+  lease_label: "Amina Tenant - Unit A-101",
+  tenant_name: "Amina Tenant",
+  unit_number: "A-101",
+  property_name: "Lease Test Property",
   alert_date: "2026-11-26",
   days_before_expiry: 90 as const,
   status: "UNREAD" as const,
@@ -55,7 +59,13 @@ const alert = {
 const lease = {
   id: alert.lease,
   tenant: "996b7f24-8762-4c08-86e4-6835ed59a5e5",
+  tenant_name: "Amina Tenant",
+  tenant_email: "tenant@example.com",
+  lease_label: "Amina Tenant - Unit A-101",
   unit: "c91a356a-a436-4ee9-9676-f4312469a834",
+  unit_number: "A-101",
+  property_name: "Lease Test Property",
+  property_code: "LEASE-TEST-01",
   application: "4e82f780-2174-4d86-b37f-047b846d6b3f",
   start_date: "2025-01-01",
   end_date: "2099-12-31",
@@ -157,6 +167,7 @@ describe("renewal pages", () => {
 
     expect(screen.getByRole("heading", { name: "Renewals" })).toBeVisible();
     expect(screen.getByText("90 days")).toBeVisible();
+    expect(screen.getByText(alert.lease_label)).toBeVisible();
     expect(consoleError).not.toHaveBeenCalled();
     expect(consoleWarn).not.toHaveBeenCalled();
   });

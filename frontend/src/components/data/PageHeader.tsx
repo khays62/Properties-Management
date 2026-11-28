@@ -18,7 +18,7 @@ export function PageHeader({
   return (
     <header
       className={[
-        "flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between",
+        "op-page-header flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between",
         className,
       ]
         .filter(Boolean)

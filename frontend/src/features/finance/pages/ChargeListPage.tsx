@@ -97,17 +97,17 @@ export function ChargeListPage() {
       ? [
           {
             id: "tenant",
-            label: "Tenant ID",
+            label: "Tenant",
             type: "text" as const,
             value: tenant,
-            placeholder: "Filter by tenant UUID",
+            placeholder: "Name or email",
           },
           {
             id: "lease",
-            label: "Lease ID",
+            label: "Lease",
             type: "text" as const,
             value: lease,
-            placeholder: "Filter by lease UUID",
+            placeholder: "Tenant, unit, or property",
           },
         ]
       : []),
@@ -148,15 +148,15 @@ export function ChargeListPage() {
       },
       {
         id: "tenant",
-        header: "Tenant ID",
-        sortValue: (charge) => charge.tenant,
-        render: (charge) => `…${charge.tenant.slice(-8)}`,
+        header: "Tenant",
+        sortValue: (charge) => charge.tenant_name ?? "",
+        render: (charge) => charge.tenant_name ?? "Tenant details unavailable",
       },
       {
         id: "lease",
-        header: "Lease ID",
-        sortValue: (charge) => charge.lease,
-        render: (charge) => `…${charge.lease.slice(-8)}`,
+        header: "Lease",
+        sortValue: (charge) => charge.lease_label ?? "",
+        render: (charge) => charge.lease_label ?? "Lease details unavailable",
       },
       {
         id: "amount",

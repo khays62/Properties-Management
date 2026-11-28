@@ -13,6 +13,7 @@ import {
   fetchLeaseApplications,
   fetchLeases,
   fetchLeaseProperties,
+  fetchLeaseTenants,
   fetchLeaseUnits,
   renewLease,
   transitionLease,
@@ -33,6 +34,7 @@ export const leaseQueryKeys = {
   detail: (id: string) => [...leaseQueryKeys.details(), id] as const,
   properties: () => [...leaseQueryKeys.all, "property-options"] as const,
   units: () => [...leaseQueryKeys.all, "unit-options"] as const,
+  tenants: () => [...leaseQueryKeys.all, "tenant-options"] as const,
   applications: () => [...leaseQueryKeys.all, "application-options"] as const,
 };
 
@@ -73,6 +75,14 @@ export function useLeaseUnitOptions(enabled = true) {
   return useQuery({
     queryKey: leaseQueryKeys.units(),
     queryFn: fetchLeaseUnits,
+    enabled,
+  });
+}
+
+export function useLeaseTenantOptions(enabled = true) {
+  return useQuery({
+    queryKey: leaseQueryKeys.tenants(),
+    queryFn: fetchLeaseTenants,
     enabled,
   });
 }
