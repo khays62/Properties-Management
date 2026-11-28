@@ -1,2 +1,5 @@
 -r base.txt
 gunicorn
+dj-database-url>=2.2,<3
+django-storages[s3]>=1.14,<2
+whitenoise>=6.8,<7
